@@ -1,8 +1,8 @@
 # 📄 go-textractor
-![Build Status](https://github.com/hupe1980/go-textractor/workflows/build/badge.svg) 
+![Build Status](https://github.com/hupe1980/go-textractor/workflows/Build/badge.svg) 
 [![Go Reference](https://pkg.go.dev/badge/github.com/hupe1980/go-textractor.svg)](https://pkg.go.dev/github.com/hupe1980/go-textractor)
 [![goreportcard](https://goreportcard.com/badge/github.com/hupe1980/go-textractor)](https://goreportcard.com/report/github.com/hupe1980/go-textractor)
-[![codecov](https://codecov.io/gh/hupe1980/go-textractor/branch/main/graph/badge.svg?token=Y4N7H8557X)](https://codecov.io/gh/hupe1980/go-textractor)
+[![codecov](https://codecov.io/gh/hupe1980/go-textractor/branch/main/graph/badge.svg?token=VEDVMNI1TV)](https://codecov.io/gh/hupe1980/go-textractor)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 > Amazon textract response parser written in go.
 
