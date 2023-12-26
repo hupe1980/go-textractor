@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/textract/types"
+	"github.com/hupe1980/go-textractor/internal"
 )
 
 // Document represents a Textract document containing pages.
@@ -16,7 +17,7 @@ type Document struct {
 }
 
 // NewDocument creates a new Document instance using response pages from Textract.
-func NewDocument(responsePages ...*ResponsePage) *Document {
+func NewDocument(responsePages ...*AnalyzeDocumentPage) *Document {
 	doc := &Document{
 		blockMap: make(map[string]types.Block),
 	}
@@ -183,4 +184,34 @@ func (p *Page) LineAtIndex(i int) *Line {
 	}
 
 	return p.lines[i]
+}
+
+type OCRConfidence struct {
+	mean float32
+	max  float32
+	min  float32
+}
+
+func NewOCRCondidenceFromScores(scores []float32) *OCRConfidence {
+	if len(scores) == 0 {
+		return nil
+	}
+
+	return &OCRConfidence{
+		mean: internal.Mean(scores),
+		max:  slices.Max(scores),
+		min:  slices.Min(scores),
+	}
+}
+
+func (c *OCRConfidence) Mean() float32 {
+	return c.mean
+}
+
+func (c *OCRConfidence) Max() float32 {
+	return c.max
+}
+
+func (c *OCRConfidence) Min() float32 {
+	return c.min
 }

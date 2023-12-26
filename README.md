@@ -57,7 +57,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	doc := textractor.NewDocument(&textractor.ResponsePage{Blocks: res.Blocks})
+	doc := textractor.NewDocument(&textractor.AnalyzeDocumentPage{Blocks: res.Blocks})
 
 	// Iterate over elements in the document
 	for _, p := range doc.Pages() {

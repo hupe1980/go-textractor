@@ -7,11 +7,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/textract/types"
 )
 
-type ResponsePage struct {
+type AnalyzeDocumentPage struct {
 	Blocks []types.Block
 }
 
-type JSONResponse struct {
+type AnalyzeDocumentSchema struct {
 	DocumentMetadata struct {
 		Pages *int32 `json:"Pages"`
 	} `json:"DocumentMetadata"`
@@ -42,13 +42,13 @@ type JSONResponse struct {
 	} `json:"Blocks"`
 }
 
-func NewResponsePageFromJSON(data []byte) (*ResponsePage, error) {
-	res := new(JSONResponse)
+func NewAnalyzeDocumentPageFromJSON(data []byte) (*AnalyzeDocumentPage, error) {
+	res := new(AnalyzeDocumentSchema)
 	if err := json.Unmarshal(data, res); err != nil {
 		return nil, err
 	}
 
-	rp := new(ResponsePage)
+	rp := new(AnalyzeDocumentPage)
 
 	for _, b := range res.Blocks {
 		relationships := []types.Relationship{}
@@ -94,4 +94,21 @@ func NewResponsePageFromJSON(data []byte) (*ResponsePage, error) {
 	}
 
 	return rp, nil
+}
+
+type AnalyzeExpensePage struct {
+	ExpenseDocuments []types.ExpenseDocument
+}
+
+type AnalyzeExpenseJSONResponse struct {
+	DocumentMetadata struct {
+		Pages *int32 `json:"Pages"`
+	} `json:"DocumentMetadata"`
+	ExpenseDocuments []struct {
+		LineItemGroups []struct {
+			LineItemGroupIndex *int32     `json:"LineItemGroupIndex"`
+			LineItems          []struct{} `json:"LineItems"`
+		} `json:"LineItemGroups"`
+		SummaryFields []struct{} `json:"SummaryFields"`
+	} `json:"ExpenseDocuments"`
 }
