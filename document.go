@@ -9,11 +9,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/textract/types"
 )
 
+// Document represents a Textract document containing pages.
 type Document struct {
 	blockMap map[string]types.Block
 	pages    []*Page
 }
 
+// NewDocument creates a new Document instance using response pages from Textract.
 func NewDocument(responsePages ...*ResponsePage) *Document {
 	doc := &Document{
 		blockMap: make(map[string]types.Block),
@@ -49,6 +51,7 @@ func NewDocument(responsePages ...*ResponsePage) *Document {
 	return doc
 }
 
+// BlockByID retrieves a block by its ID.
 func (doc *Document) BlockByID(id string) *types.Block {
 	b, ok := doc.blockMap[id]
 	if !ok {
@@ -58,18 +61,21 @@ func (doc *Document) BlockByID(id string) *types.Block {
 	return &b
 }
 
-func (doc *Document) PageNumber(n int) (*Page, error) {
+// PageNumber retrieves a page by its page number.
+func (doc *Document) PageNumber(n int) *Page {
 	if n < 1 || n > len(doc.pages) {
-		return nil, fmt.Errorf("number %d must be between 1 and %d", n, len(doc.pages))
+		panic(fmt.Sprintf("number %d must be between 1 and %d", n, len(doc.pages)))
 	}
 
-	return doc.pages[n-1], nil
+	return doc.pages[n-1]
 }
 
+// Pages returns all pages in the document.
 func (doc *Document) Pages() []*Page {
 	return doc.pages
 }
 
+// PageCount returns the total number of pages in the document.
 func (doc *Document) PageCount() int {
 	return len(doc.pages)
 }
@@ -83,7 +89,7 @@ type Page struct {
 	tables []*Table
 }
 
-// NewPage creates a new Page instance.
+// NewPage creates a new Page instance using Textract page blocks and a block map.
 func NewPage(pageBlock types.Block, blocks []types.Block, blockMap map[string]types.Block) *Page {
 	page := &Page{
 		block:  pageBlock,
@@ -111,18 +117,22 @@ func NewPage(pageBlock types.Block, blocks []types.Block, blockMap map[string]ty
 	return page
 }
 
+// ID returns the ID of the page block.
 func (p *Page) ID() string {
 	return aws.ToString(p.block.Id)
 }
 
+// Blocks returns all blocks in the page.
 func (p *Page) Blocks() []types.Block {
 	return p.blocks
 }
 
+// Geometry returns the geometry of the page.
 func (p *Page) Geometry() *Geometry {
 	return NewGeometry(p.block.Geometry)
 }
 
+// Text returns the concatenated text from all lines in the page.
 func (p *Page) Text() string {
 	texts := make([]string, len(p.lines))
 	for i, l := range p.lines {
@@ -132,34 +142,45 @@ func (p *Page) Text() string {
 	return strings.Join(texts, "\n")
 }
 
+// Form returns the form information on the page.
 func (p *Page) Form() *Form {
 	return p.form
 }
 
+// TableCount returns the total number of tables in the page.
 func (p *Page) TableCount() int {
 	return len(p.tables)
 }
 
+// Tables returns all tables in the page.
 func (p *Page) Tables() []*Table {
 	return p.tables
 }
 
+// TableAtIndex returns the table at the specified index.
 func (p *Page) TableAtIndex(i int) *Table {
+	if i < 0 || i >= len(p.tables) {
+		panic(fmt.Sprintf("index %d must be > 0 and < %d", i, len(p.tables)))
+	}
+
 	return p.tables[i]
 }
 
+// LineCount returns the total number of lines in the page.
 func (p *Page) LineCount() int {
 	return len(p.lines)
 }
 
+// Lines returns all lines in the page.
 func (p *Page) Lines() []*Line {
 	return p.lines
 }
 
-func (p *Page) LineAtIndex(i int) (*Line, error) {
+// LineAtIndex returns the line at the specified index.
+func (p *Page) LineAtIndex(i int) *Line {
 	if i < 0 || i >= len(p.lines) {
-		return nil, fmt.Errorf("index %d must be > 0 and < %d", i, len(p.lines))
+		panic(fmt.Sprintf("index %d must be > 0 and < %d", i, len(p.lines)))
 	}
 
-	return p.lines[i], nil
+	return p.lines[i]
 }

@@ -50,7 +50,7 @@ func main() {
 			Bytes: b,
 		},
 		FeatureTypes: []types.FeatureType{
-			types.FeatureTypeTables,
+			types.FeatureTypeTables, types.FeatureTypeForms,
 		},
 	})
 	if err != nil {

@@ -1,3 +1,4 @@
+// Package textractor provides functionality to work with the Amazon Textract service.
 package textractor
 
 import (

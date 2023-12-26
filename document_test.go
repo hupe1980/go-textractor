@@ -15,8 +15,7 @@ func TestDocument(t *testing.T) {
 		assert.Equal(t, 1, len(doc.Pages()))
 		assert.Equal(t, len(doc.Pages()), doc.PageCount())
 
-		firstPage, err := doc.PageNumber(1)
-		assert.NoError(t, err)
+		firstPage := doc.PageNumber(1)
 		assert.Equal(t, doc.Pages()[0], firstPage)
 	})
 }
