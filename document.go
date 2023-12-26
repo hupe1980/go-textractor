@@ -83,11 +83,12 @@ func (doc *Document) PageCount() int {
 
 // Page represents a page in the document.
 type Page struct {
-	block  types.Block
-	blocks []types.Block
-	lines  []*Line
-	form   *Form
-	tables []*Table
+	block      types.Block
+	blocks     []types.Block
+	lines      []*Line
+	form       *Form
+	tables     []*Table
+	signatures []*Signature
 }
 
 // NewPage creates a new Page instance using Textract page blocks and a block map.
@@ -111,6 +112,8 @@ func NewPage(pageBlock types.Block, blocks []types.Block, blockMap map[string]ty
 					page.form.AddField(f)
 				}
 			}
+		case types.BlockTypeSignature:
+			page.signatures = append(page.signatures, NewSignature(b))
 		default: // TODO logging?
 		}
 	}
@@ -146,6 +149,11 @@ func (p *Page) Text() string {
 // Form returns the form information on the page.
 func (p *Page) Form() *Form {
 	return p.form
+}
+
+// Signatures returns the signatures on the page.
+func (p *Page) Signatures() []*Signature {
+	return p.signatures
 }
 
 // TableCount returns the total number of tables in the page.
@@ -186,13 +194,16 @@ func (p *Page) LineAtIndex(i int) *Line {
 	return p.lines[i]
 }
 
+// OCRConfidence represents the OCR confidence scores, including mean, max, and min values.
 type OCRConfidence struct {
 	mean float32
 	max  float32
 	min  float32
 }
 
-func NewOCRCondidenceFromScores(scores []float32) *OCRConfidence {
+// NewOCRConfidenceFromScores creates a new OCRConfidence instance from a slice of confidence scores.
+// If the scores slice is empty, it returns nil.
+func NewOCRConfidenceFromScores(scores []float32) *OCRConfidence {
 	if len(scores) == 0 {
 		return nil
 	}
@@ -204,14 +215,17 @@ func NewOCRCondidenceFromScores(scores []float32) *OCRConfidence {
 	}
 }
 
+// Mean returns the mean (average) OCR confidence score.
 func (c *OCRConfidence) Mean() float32 {
 	return c.mean
 }
 
+// Max returns the maximum OCR confidence score.
 func (c *OCRConfidence) Max() float32 {
 	return c.max
 }
 
+// Min returns the minimum OCR confidence score.
 func (c *OCRConfidence) Min() float32 {
 	return c.min
 }

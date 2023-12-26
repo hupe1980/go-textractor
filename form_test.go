@@ -128,4 +128,55 @@ func TestForm(t *testing.T) {
 		// Assert that the retrieved field not remains the same as the first one
 		assert.Equal(t, fieldWithHigherConfidence, retrievedField1)
 	})
+
+	t.Run("SearchFieldByKey", func(t *testing.T) {
+		form := NewForm()
+
+		blockMap := map[string]types.Block{
+			"1": {Id: aws.String("1"), BlockType: types.BlockTypeWord, Text: aws.String("foo1")},
+			"2": {Id: aws.String("2"), BlockType: types.BlockTypeWord, Text: aws.String("bar1")},
+			"3": {Id: aws.String("3"), BlockType: types.BlockTypeWord, Text: aws.String("foo2")},
+			"4": {Id: aws.String("4"), BlockType: types.BlockTypeWord, Text: aws.String("bar2")},
+		}
+
+		field1 := &Field{
+			key: NewFieldKey(types.Block{
+				Id:         aws.String("id1"),
+				Confidence: aws.Float32(80),
+			}, []string{"1"}, blockMap),
+			value: NewFieldValue(types.Block{
+				Id:         aws.String("id2"),
+				Confidence: aws.Float32(80),
+			}, []string{"2"}, blockMap),
+		}
+
+		field2 := &Field{
+			key: NewFieldKey(types.Block{
+				Id:         aws.String("id3"),
+				Confidence: aws.Float32(80),
+			}, []string{"3"}, blockMap),
+			value: NewFieldValue(types.Block{
+				Id:         aws.String("id4"),
+				Confidence: aws.Float32(80),
+			}, []string{"4"}, blockMap),
+		}
+
+		form.AddField(field1)
+		form.AddField(field2)
+
+		t.Run("Match All", func(t *testing.T) {
+			fields := form.SearchFieldByKey("FOO")
+			assert.Equal(t, 2, len(fields))
+		})
+
+		t.Run("Match One", func(t *testing.T) {
+			fields := form.SearchFieldByKey("FOO1")
+			assert.Equal(t, 1, len(fields))
+		})
+
+		t.Run("No Match", func(t *testing.T) {
+			fields := form.SearchFieldByKey("XXX")
+			assert.Equal(t, 0, len(fields))
+		})
+	})
 }

@@ -1,6 +1,7 @@
 package textractor
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/aws/aws-sdk-go-v2/service/textract/types"
@@ -94,6 +95,11 @@ func (bb *BoundingBox) Intersection(other *BoundingBox) *BoundingBox {
 	return nil
 }
 
+// String returns a string representation of the bounding box.
+func (bb *BoundingBox) String() string {
+	return fmt.Sprintf("width: %f, height: %f, left: %f, top: %f", bb.Width(), bb.Height(), bb.Left(), bb.Top())
+}
+
 // Point represents a 2D point.
 type Point struct {
 	point types.Point
@@ -114,6 +120,11 @@ func (p *Point) X() float32 {
 // Y returns the Y coordinate of the point.
 func (p *Point) Y() float32 {
 	return p.point.Y
+}
+
+// String returns a string representation of the Point, including its X and Y coordinates.
+func (p *Point) String() string {
+	return fmt.Sprintf("x: %f, y: %f", p.X(), p.Y())
 }
 
 // Geometry represents the geometric properties of an element.

@@ -43,6 +43,24 @@ func (f *Form) FieldByKey(key string) *Field {
 	return field
 }
 
+// SearchFieldByKey searches for fields in the form with a key containing the specified string.
+// It performs a case-insensitive search on the key text.
+func (f *Form) SearchFieldByKey(key string) []*Field {
+	searchKey := strings.ToLower(key)
+
+	var result []*Field
+
+	for _, field := range f.Fields() {
+		if key := field.Key(); key != nil {
+			if strings.Contains(strings.ToLower(key.Text()), searchKey) {
+				result = append(result, field)
+			}
+		}
+	}
+
+	return result
+}
+
 // Fields returns all fields in the form.
 func (f *Form) Fields() []*Field {
 	return internal.Values(f.fieldMap)
@@ -92,7 +110,7 @@ func (fk *FieldKey) OCRConfidence() *OCRConfidence {
 		scores[i] = w.Confidence()
 	}
 
-	return NewOCRCondidenceFromScores(scores)
+	return NewOCRConfidenceFromScores(scores)
 }
 
 // String returns the string representation of the field key.
@@ -160,7 +178,7 @@ func (fv *FieldValue) OCRConfidence() *OCRConfidence {
 		scores = append(scores, fv.selectionElement.Confidence())
 	}
 
-	return NewOCRCondidenceFromScores(scores)
+	return NewOCRConfidenceFromScores(scores)
 }
 
 // String returns the string representation of the field value.
@@ -235,7 +253,7 @@ func (f *Field) OCRConfidence() *OCRConfidence {
 		}
 	}
 
-	return NewOCRCondidenceFromScores(scores)
+	return NewOCRConfidenceFromScores(scores)
 }
 
 // Key returns the key part of the form field.

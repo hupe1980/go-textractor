@@ -30,7 +30,7 @@ import (
 )
 
 func main() {
-	file, err := os.Open("example/testfile.pdf")
+	file, err := os.Open("examples/analyze_document/testfile.pdf")
 	if err != nil {
 		log.Fatal(err)
 	}
