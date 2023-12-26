@@ -89,6 +89,7 @@ type Page struct {
 	form       *Form
 	tables     []*Table
 	signatures []*Signature
+	queries    Queries
 }
 
 // NewPage creates a new Page instance using Textract page blocks and a block map.
@@ -112,6 +113,8 @@ func NewPage(pageBlock types.Block, blocks []types.Block, blockMap map[string]ty
 					page.form.AddField(f)
 				}
 			}
+		case types.BlockTypeQuery:
+			page.queries = append(page.queries, NewQuery(b, blockMap))
 		case types.BlockTypeSignature:
 			page.signatures = append(page.signatures, NewSignature(b))
 		default: // TODO logging?
@@ -154,6 +157,11 @@ func (p *Page) Form() *Form {
 // Signatures returns the signatures on the page.
 func (p *Page) Signatures() []*Signature {
 	return p.signatures
+}
+
+// Queries returns the queries for the page.
+func (p *Page) Queries() Queries {
+	return p.queries
 }
 
 // TableCount returns the total number of tables in the page.
