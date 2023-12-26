@@ -1,19 +1,3 @@
-# 📄 go-textractor
-![Build Status](https://github.com/hupe1980/go-textractor/workflows/build/badge.svg) 
-[![Go Reference](https://pkg.go.dev/badge/github.com/hupe1980/go-textractor.svg)](https://pkg.go.dev/github.com/hupe1980/go-textractor)
-[![goreportcard](https://goreportcard.com/badge/github.com/hupe1980/go-textractor)](https://goreportcard.com/report/github.com/hupe1980/go-textractor)
-[![codecov](https://codecov.io/gh/hupe1980/go-textractor/branch/main/graph/badge.svg?token=Y4N7H8557X)](https://codecov.io/gh/hupe1980/go-textractor)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-> Amazon textract response parser written in go.
-
-## Installation
-Use Go modules to include go-textractor in your project:
-```
-go get github.com/hupe1980/go-textractor
-```
-
-## Usage
-```golang
 package main
 
 import (
@@ -30,7 +14,7 @@ import (
 )
 
 func main() {
-	file, err := os.Open("example/testfile.pdf")
+	file, err := os.Open("examples/analyze_document/testfile.pdf")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -64,6 +48,7 @@ func main() {
 		// Print lines and words
 		for _, l := range p.Lines() {
 			fmt.Printf("Line: %s (%f)\n", l.Text(), l.Confidence())
+
 			for _, w := range l.Words() {
 				fmt.Printf("Word: %s (%f)\n", w.Text(), w.Confidence())
 			}
@@ -84,12 +69,3 @@ func main() {
 		}
 	}
 }
-```
-
-For more example usage, see [examples](./examples).
-
-## Contributing
-Contributions are welcome! Feel free to open an issue or submit a pull request for any improvements or new features you would like to see.
-
-## License
-This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
