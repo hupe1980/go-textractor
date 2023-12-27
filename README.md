@@ -45,7 +45,7 @@ func main() {
 	cfg, _ := config.LoadDefaultConfig(context.Background())
 	client := textract.NewFromConfig(cfg)
 
-	res, err := client.AnalyzeDocument(context.Background(), &textract.AnalyzeDocumentInput{
+	output, err := client.AnalyzeDocument(context.Background(), &textract.AnalyzeDocumentInput{
 		Document: &types.Document{
 			Bytes: b,
 		},
@@ -57,7 +57,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	doc := textractor.NewDocument(&textractor.AnalyzeDocumentPage{Blocks: res.Blocks})
+	doc := textractor.NewDocument(output.Blocks)
 
 	// Iterate over elements in the document
 	for _, p := range doc.Pages() {

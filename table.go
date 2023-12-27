@@ -71,6 +71,10 @@ func (c *Cell) Text() string {
 	return strings.Join(texts, " ")
 }
 
+func (c *Cell) EntityTypes() []types.EntityType {
+	return c.Block().EntityTypes
+}
+
 type Row struct {
 	cells []*Cell
 	*content

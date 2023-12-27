@@ -194,7 +194,7 @@ type Field struct {
 
 // NewField creates a new Field instance.
 func NewField(block types.Block, blockMap map[string]types.Block) *Field {
-	field := &Field{}
+	field := new(Field)
 
 	for _, r := range block.Relationships {
 		if r.Type == types.RelationshipTypeChild {
@@ -220,7 +220,7 @@ func NewField(block types.Block, blockMap map[string]types.Block) *Field {
 
 // Confidence calculates the confidence score for the form field.
 func (f *Field) Confidence() float32 {
-	scores := []float32{}
+	scores := make([]float32, 0)
 
 	if f.Key() != nil {
 		scores = append(scores, f.Key().Confidence())

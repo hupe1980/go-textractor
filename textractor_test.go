@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func loadTestdata(filename string) (*AnalyzeDocumentPage, error) { //nolint unparam
+func loadTestdata(filename string) (*AnalyzeDocumentOutput, error) { //nolint unparam
 	f, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -18,5 +18,5 @@ func loadTestdata(filename string) (*AnalyzeDocumentPage, error) { //nolint unpa
 		return nil, err
 	}
 
-	return NewAnalyzeDocumentPageFromJSON(b)
+	return NewAnalyzeDocumentOutputFromJSON(b)
 }

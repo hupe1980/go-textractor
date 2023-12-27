@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/textract/types"
 )
 
-type AnalyzeDocumentPage struct {
+type AnalyzeDocumentOutput struct {
 	Blocks []types.Block
 }
 
@@ -42,13 +42,13 @@ type AnalyzeDocumentSchema struct {
 	} `json:"Blocks"`
 }
 
-func NewAnalyzeDocumentPageFromJSON(data []byte) (*AnalyzeDocumentPage, error) {
+func NewAnalyzeDocumentOutputFromJSON(data []byte) (*AnalyzeDocumentOutput, error) {
 	res := new(AnalyzeDocumentSchema)
 	if err := json.Unmarshal(data, res); err != nil {
 		return nil, err
 	}
 
-	rp := new(AnalyzeDocumentPage)
+	rp := new(AnalyzeDocumentOutput)
 
 	for _, b := range res.Blocks {
 		relationships := []types.Relationship{}
@@ -96,7 +96,7 @@ func NewAnalyzeDocumentPageFromJSON(data []byte) (*AnalyzeDocumentPage, error) {
 	return rp, nil
 }
 
-type AnalyzeExpensePage struct {
+type AnalyzeExpenseOutput struct {
 	ExpenseDocuments []types.ExpenseDocument
 }
 

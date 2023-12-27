@@ -17,7 +17,7 @@ type Document struct {
 }
 
 // NewDocument creates a new Document instance using response pages from Textract.
-func NewDocument(responsePages ...*AnalyzeDocumentPage) *Document {
+func NewDocument(documentBlocks ...[]types.Block) *Document {
 	doc := &Document{
 		blockMap: make(map[string]types.Block),
 	}
@@ -27,8 +27,8 @@ func NewDocument(responsePages ...*AnalyzeDocumentPage) *Document {
 		currentPageContent []types.Block
 	)
 
-	for _, p := range responsePages {
-		for i, b := range p.Blocks {
+	for _, blocks := range documentBlocks {
+		for i, b := range blocks {
 			doc.blockMap[aws.ToString(b.Id)] = b
 
 			if b.BlockType == types.BlockTypePage {
@@ -36,7 +36,7 @@ func NewDocument(responsePages ...*AnalyzeDocumentPage) *Document {
 					doc.pages = append(doc.pages, NewPage(*currentPageBlock, currentPageContent, doc.blockMap))
 				}
 
-				currentPageBlock = &p.Blocks[i]
+				currentPageBlock = &blocks[i]
 				currentPageContent = make([]types.Block, 0)
 				currentPageContent = append(currentPageContent, b)
 			} else {
