@@ -57,7 +57,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	doc := textractor.NewDocument(output.Blocks)
+	doc, err := textractor.ParseDocumentAPIOutput(&textractor.DocumentAPIOutput{
+		DocumentMetadata: output.DocumentMetadata,
+		Blocks:           output.Blocks,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Iterate over elements in the document
 	for _, p := range doc.Pages() {
@@ -78,9 +84,9 @@ func main() {
 			}
 		}
 
-		// Print fields
-		for _, f := range p.Form().Fields() {
-			fmt.Printf("Field: Key: %s, Value: %s\n", f.Key(), f.Value())
+		// Print key values
+		for _, kv := range p.KeyValues() {
+			fmt.Printf("Key: %s, Value: %s\n", kv.Key(), kv.Value())
 		}
 	}
 }

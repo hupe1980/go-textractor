@@ -55,7 +55,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	doc := textractor.NewDocument(output.Blocks)
+	doc, err := textractor.ParseDocumentAPIOutput(&textractor.DocumentAPIOutput{
+		DocumentMetadata: output.DocumentMetadata,
+		Blocks:           output.Blocks,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Iterate over elements in the document
 	for _, p := range doc.Pages() {

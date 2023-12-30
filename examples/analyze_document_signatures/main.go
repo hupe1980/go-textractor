@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/textract"
@@ -43,26 +42,32 @@ func main() {
 		log.Fatal(err)
 	}
 
-	doc := textractor.NewDocument(output.Blocks)
+	doc, err := textractor.ParseDocumentAPIOutput(&textractor.DocumentAPIOutput{
+		DocumentMetadata: output.DocumentMetadata,
+		Blocks:           output.Blocks,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Iterate over elements in the document
 	for _, p := range doc.Pages() {
 		for _, s := range p.Signatures() {
 			fmt.Printf("ID: [%s]\n", s.ID())
-			fmt.Printf("BoundingBox: [%s]\n", s.Geometry().BoundingBox())
+			fmt.Printf("BoundingBox: [%s]\n", s.BoundingBox())
 
-			points := make([]string, len(s.Geometry().Polygon()))
-			for i, point := range s.Geometry().Polygon() {
-				points[i] = fmt.Sprintf("(%s)", point)
-			}
+			// points := make([]string, len(s.Geometry().Polygon()))
+			// for i, point := range s.Geometry().Polygon() {
+			// 	points[i] = fmt.Sprintf("(%s)", point)
+			// }
 
-			fmt.Printf("Polygon: [%s]\n", strings.Join(points, ", "))
-			fmt.Println()
+			// fmt.Printf("Polygon: [%s]\n", strings.Join(points, ", "))
+			// fmt.Println()
 		}
 
 		fmt.Println("Search Fields:")
 
-		for _, f := range p.Form().SearchFieldByKey("Signature") {
+		for _, f := range p.SearchValueByKey("Signature") {
 			if k := f.Key(); k != nil {
 				fmt.Printf("Key: %s\n", k)
 			}

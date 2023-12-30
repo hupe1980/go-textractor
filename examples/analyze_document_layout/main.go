@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	file, err := os.Open("examples/analyze_document/testfile.pdf")
+	file, err := os.Open("examples/analyze_document_layout/testfile.png")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,7 +34,7 @@ func main() {
 			Bytes: b,
 		},
 		FeatureTypes: []types.FeatureType{
-			types.FeatureTypeTables, types.FeatureTypeForms,
+			types.FeatureTypeLayout,
 		},
 	})
 	if err != nil {
@@ -49,29 +49,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Iterate over elements in the document
-	for _, p := range doc.Pages() {
-		// Print lines and words
-		for _, l := range p.Lines() {
-			fmt.Printf("Line: %s (%f)\n", l.Text(), l.Confidence())
-
-			for _, w := range l.Words() {
-				fmt.Printf("Word: %s (%f)\n", w.Text(), w.Confidence())
-			}
-		}
-
-		// Print tables
-		for _, t := range p.Tables() {
-			for r, row := range t.Rows() {
-				for c, cell := range row.Cells() {
-					fmt.Printf("Table[%d][%d] = %s (%f)\n", r, c, cell.Text(), cell.Confidence())
-				}
-			}
-		}
-
-		// Print key values
-		for _, kv := range p.KeyValues() {
-			fmt.Printf("Key: %s, Value: %s\n", kv.Key(), kv.Value())
-		}
-	}
+	fmt.Println(doc.Text(func(tlo *textractor.TextLinearizationOptions) {
+		tlo.HideFigureLayout = true
+		tlo.TitlePrefix = "# "
+		tlo.SectionHeaderPrefix = "## "
+	}))
 }

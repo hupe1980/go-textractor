@@ -3,64 +3,33 @@ package textractor
 import (
 	"sort"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/textract/types"
 )
 
-// Queries represents a slice of Query instances.
-type Queries []*Query
-
-// QueryResult represents the result of a Textract query.
-type QueryResult struct {
-	content
-}
-
-// NewQueryResult creates a new QueryResult instance.
-func NewQueryResult(block types.Block) *QueryResult {
-	return &QueryResult{
-		content: content{block},
-	}
-}
-
-// Text returns the text content of the query result.
-func (qr *QueryResult) Text() string {
-	return aws.ToString(qr.Block().Text)
-}
-
-// Query represents a Textract query.
+// Query represents a query with associated information, including an identifier,
+// text, alias, query pages, results, a page, and raw block data.
 type Query struct {
-	block   types.Block
-	results []*QueryResult
+	id         string         // Identifier for the query
+	text       string         // Text associated with the query
+	alias      string         // Alias for the query
+	queryPages []string       // Pages to which the query is applied
+	results    []*QueryResult // Results associated with the query
+	page       *Page          // Page information
+	raw        types.Block    // Raw block data
 }
 
-// NewQuery creates a new Query instance.
-func NewQuery(block types.Block, blockMap map[string]types.Block) *Query {
-	query := &Query{
-		block: block,
-	}
-
-	for _, r := range block.Relationships {
-		if r.Type == types.RelationshipTypeAnswer {
-			for _, i := range r.Ids {
-				b := blockMap[i]
-				if b.BlockType == types.BlockTypeQueryResult {
-					query.results = append(query.results, NewQueryResult(b))
-				}
-			}
-		}
-	}
-
-	return query
-}
-
-// Alias returns the alias of the query.
-func (q *Query) Alias() string {
-	return aws.ToString(q.block.Query.Alias)
-}
-
-// Text returns the text content of the query.
+// Text returns the text associated with the query.
 func (q *Query) Text() string {
-	return aws.ToString(q.block.Query.Text)
+	return q.text
+}
+
+// Alias returns the alias for the query.
+func (q *Query) Alias() string {
+	return q.alias
+}
+
+func (q *Query) HasResult() bool {
+	return len(q.results) > 0
 }
 
 // TopResult retrieves the top result by confidence score, if any are available.
@@ -78,9 +47,24 @@ func (q *Query) ResultsByConfidence() []*QueryResult {
 	sortedResults := make([]*QueryResult, len(q.results))
 	copy(sortedResults, q.results)
 	sort.Slice(sortedResults, func(i, j int) bool {
-		// Negative -> a sorted before b
 		return sortedResults[j].Confidence() < sortedResults[i].Confidence()
 	})
 
 	return sortedResults
+}
+
+// QueryResult represents the result of a parsed query.
+type QueryResult struct {
+	base
+	text string
+}
+
+// Confidence returns the confidence level of the query result.
+func (qr *QueryResult) Confidence() float32 {
+	return qr.confidence
+}
+
+// Text returns the extracted text from the query result.
+func (qr *QueryResult) Text() string {
+	return qr.text
 }

@@ -57,3 +57,33 @@ func TestValues(t *testing.T) {
 		})
 	}
 }
+
+func TestConcatenate(t *testing.T) {
+	t.Run("ConcatenateInts", func(t *testing.T) {
+		ints1 := []int{1, 2, 3}
+		ints2 := []int{4, 5, 6}
+		expectedInts := []int{1, 2, 3, 4, 5, 6}
+		resultInts := Concatenate(ints1, ints2)
+		assert.Equal(t, expectedInts, resultInts, "Concatenate of ints failed")
+	})
+
+	t.Run("ConcatenateStrings", func(t *testing.T) {
+		strings1 := []string{"a", "b", "c"}
+		strings2 := []string{"d", "e", "f"}
+		expectedStrings := []string{"a", "b", "c", "d", "e", "f"}
+		resultStrings := Concatenate(strings1, strings2)
+		assert.Equal(t, expectedStrings, resultStrings, "Concatenate of strings failed")
+	})
+
+	t.Run("ConcatenateEmptySlices", func(t *testing.T) {
+		emptyInts := []int{}
+		emptyStrings := []string{}
+		emptyMixed := []interface{}{}
+		resultEmptyInts := Concatenate(emptyInts)
+		resultEmptyStrings := Concatenate(emptyStrings)
+		resultEmptyMixed := Concatenate(emptyMixed)
+		assert.Empty(t, resultEmptyInts, "Concatenate of empty ints failed")
+		assert.Empty(t, resultEmptyStrings, "Concatenate of empty strings failed")
+		assert.Empty(t, resultEmptyMixed, "Concatenate of empty mixed types failed")
+	})
+}

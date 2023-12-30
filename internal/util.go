@@ -39,3 +39,23 @@ func Values[M ~map[K]V, K comparable, V any](m M) []V {
 
 	return r
 }
+
+// Concatenate concatenates multiple slices of type T into a single slice.
+// The function takes a variadic number of slices and returns a new slice containing
+// all elements of the input slices, preserving the order.
+func Concatenate[T any](slices ...[]T) []T {
+	var result []T
+
+	resultCap := 0
+
+	for _, s := range slices {
+		resultCap += len(s)
+	}
+
+	result = make([]T, 0, resultCap)
+	for _, s := range slices {
+		result = append(result, s...)
+	}
+
+	return result
+}

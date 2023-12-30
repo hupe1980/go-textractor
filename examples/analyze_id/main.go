@@ -41,12 +41,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	parser := textractor.NewAnalyzeIDOutputParser(output)
+	idocuments, err := textractor.ParseAnalyzeIDOutput(&textractor.AnalyzeIDOutput{
+		DocumentMetadata:  output.DocumentMetadata,
+		IdentityDocuments: output.IdentityDocuments,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	for _, doc := range parser.Documents() {
-		fmt.Printf("Document type: %s\n\n", doc.Type())
+	for _, idoc := range idocuments {
+		fmt.Printf("Document type: %s\n\n", idoc.IdentityDocumentType())
 
-		for _, f := range doc.Fields() {
+		for _, f := range idoc.Fields() {
 			value := f.Value()
 
 			if f.IsNormalized() {
@@ -58,11 +64,10 @@ func main() {
 				value = date.Format("2006-01-02")
 			}
 
-			fmt.Printf("%s: %s\n", f.Type(), value)
+			fmt.Printf("%s: %s\n", f.FieldType(), value)
 		}
 
-		// for _, p := range doc.Pages() {
-		// 	fmt.Println(p.Text())
-		// }
+		// doc := idoc.Document()
+		// fmt.Println(doc.Text())
 	}
 }
