@@ -17,7 +17,7 @@ type Page struct {
 	lines      []*Line
 	keyValues  []*KeyValue
 	tables     []*Table
-	layouts    []Layout
+	layouts    []*Layout
 	queries    []*Query
 	signatures []*Signature
 }
@@ -54,7 +54,7 @@ func (p *Page) KeyValues() []*KeyValue {
 	return p.keyValues
 }
 
-func (p *Page) Layouts() []Layout {
+func (p *Page) Layouts() []*Layout {
 	return p.layouts
 }
 
@@ -64,6 +64,10 @@ func (p *Page) Queries() []*Query {
 
 func (p *Page) Signatures() []*Signature {
 	return p.signatures
+}
+
+func (p *Page) AddLayouts(layouts ...*Layout) {
+	p.layouts = append(p.layouts, layouts...)
 }
 
 func (p *Page) Text(optFns ...func(*TextLinearizationOptions)) string {

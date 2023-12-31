@@ -85,10 +85,19 @@ func (bb *BoundingBox) String() string {
 	return fmt.Sprintf("width: %f, height: %f, left: %f, top: %f", bb.Width(), bb.Height(), bb.Left(), bb.Top())
 }
 
+type BoundingBoxAccessor interface {
+	BoundingBox() *BoundingBox
+}
+
 // NewEnclosingBoundingBox returns a new bounding box that represents the union of multiple bounding boxes.
-func NewEnclosingBoundingBox(bboxes ...*BoundingBox) *BoundingBox {
-	if len(bboxes) == 0 {
+func NewEnclosingBoundingBox[T BoundingBoxAccessor](accessors ...T) *BoundingBox {
+	if len(accessors) == 0 {
 		return nil
+	}
+
+	bboxes := make([]*BoundingBox, 0, len(accessors))
+	for _, a := range accessors {
+		bboxes = append(bboxes, a.BoundingBox())
 	}
 
 	left, top, right, bottom := float32(math.Inf(1)), float32(math.Inf(1)), float32(math.Inf(-1)), float32(math.Inf(-1))

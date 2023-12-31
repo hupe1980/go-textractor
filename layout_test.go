@@ -15,7 +15,7 @@ func TestGroupElementsHorizontally(t *testing.T) {
 	})
 
 	t.Run("SingleElement", func(t *testing.T) {
-		element := &layoutChildMock{boundingBox: &BoundingBox{top: 10, height: 20}}
+		element := &layoutChildMock{id: "e1", boundingBox: &BoundingBox{top: 10, height: 20}}
 		elements := []LayoutChild{element}
 		groups := groupElementsHorizontally(elements, 0.5)
 		assert.Len(t, groups, 1, "Expected one group for a single element")
@@ -23,9 +23,9 @@ func TestGroupElementsHorizontally(t *testing.T) {
 	})
 
 	t.Run("MultipleElements", func(t *testing.T) {
-		element1 := &layoutChildMock{boundingBox: &BoundingBox{top: 10, height: 20}}
-		element2 := &layoutChildMock{boundingBox: &BoundingBox{top: 15, height: 20}}
-		element3 := &layoutChildMock{boundingBox: &BoundingBox{top: 30, height: 20}}
+		element1 := &layoutChildMock{id: "e1", boundingBox: &BoundingBox{top: 10, height: 20}}
+		element2 := &layoutChildMock{id: "e2", boundingBox: &BoundingBox{top: 15, height: 20}}
+		element3 := &layoutChildMock{id: "e3", boundingBox: &BoundingBox{top: 30, height: 20}}
 		elements := []LayoutChild{element1, element2, element3}
 		groups := groupElementsHorizontally(elements, 0.5)
 		assert.Len(t, groups, 2, "Expected two groups")
@@ -35,17 +35,18 @@ func TestGroupElementsHorizontally(t *testing.T) {
 }
 
 type layoutChildMock struct {
+	id          string
 	boundingBox *BoundingBox
+}
+
+func (lc *layoutChildMock) ID() string {
+	return lc.id
 }
 
 func (lc *layoutChildMock) BoundingBox() *BoundingBox {
 	return lc.boundingBox
 }
 
-func (lc *layoutChildMock) Words() []*Word {
-	return nil
-}
-
-func (lc *layoutChildMock) Text(_ ...func(*TextLinearizationOptions)) string {
-	return ""
+func (lc *layoutChildMock) TextAndWords(_ ...func(*TextLinearizationOptions)) (string, []*Word) {
+	return "", nil
 }

@@ -24,5 +24,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.26.2
 	github.com/aws/aws-sdk-go-v2/service/textract v1.28.5
 	github.com/aws/smithy-go v1.19.0 // indirect
+	github.com/google/uuid v1.5.0
 	github.com/stretchr/testify v1.8.4
 )

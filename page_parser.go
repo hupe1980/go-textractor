@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/textract/types"
+	"github.com/google/uuid"
 	"github.com/hupe1980/go-textractor/internal"
 )
 
@@ -63,7 +64,7 @@ func (pp *pageParser) createWords() []*Word {
 		if w.line == nil {
 			w.line = &Line{
 				base: base{
-					id:          "", // TODO
+					id:          uuid.New().String(),
 					confidence:  w.Confidence(),
 					blockType:   types.BlockTypeLine,
 					boundingBox: w.BoundingBox(),
@@ -165,95 +166,100 @@ func (pp *pageParser) createKeyValues() []*KeyValue {
 			page:  pp.page,
 		}
 
+		layout := &Layout{
+			base: newBase(b, pp.page), //FIXME blocktype
+		}
+
+		layout.blockType = types.BlockTypeLayoutKeyValue
+		layout.boundingBox = kv.BoundingBox()
+
+		layout.AddChildren(kv)
+
+		pp.page.AddLayouts(layout)
+
 		keyValues = append(keyValues, kv)
 	}
 
 	return keyValues
 }
 
-func (pp *pageParser) createLayouts() []Layout {
+func (pp *pageParser) createLayouts() []*Layout {
 	ids := pp.blockTypeIDs(types.BlockType("LAYOUT"))
-	layouts := make([]Layout, 0, len(ids))
-
-	readingOrder := 0
+	layouts := make([]*Layout, 0, len(ids))
 
 	for _, id := range ids {
 		b := pp.bp.blockByID(id)
 
-		if b.BlockType == types.BlockTypeLayoutList {
-			containerLayout := &ContainerLayout{
-				layout: newLayout(b, pp.page, readingOrder),
-			}
-
-			for _, r := range b.Relationships {
-				if r.Type == types.RelationshipTypeChild {
-					for i, ri := range r.Ids {
-						leaf := pp.bp.blockByID(ri)
-						leafLayout := &LeafLayout{
-							layout:     newLayout(leaf, pp.page, i),
-							noNewLines: true,
-						}
-
-						for _, r := range b.Relationships {
-							if r.Type == types.RelationshipTypeChild {
-								for _, ri := range r.Ids {
-									leafLayout.children = append(leafLayout.children, pp.idLineMap[ri])
-								}
-							}
-						}
-
-						containerLayout.layouts = append(containerLayout.layouts, leafLayout)
-					}
-				}
-			}
-
-			layouts = append(layouts, containerLayout)
-		} else {
-			var layout *LeafLayout
-			switch b.BlockType { // nolint exhaustive
-			case types.BlockTypeLayoutText, types.BlockTypeLayoutSectionHeader, types.BlockTypeLayoutTitle:
-				layout = &LeafLayout{
-					layout:     newLayout(b, pp.page, readingOrder),
-					noNewLines: true,
-				}
-			default:
-				layout = &LeafLayout{
-					layout:     newLayout(b, pp.page, readingOrder),
-					noNewLines: false,
-				}
+		var layout *Layout
+		switch b.BlockType { // nolint exhaustive
+		case types.BlockTypeLayoutList:
+			layout = &Layout{
+				base: newBase(b, pp.page),
 			}
 
 			for _, r := range b.Relationships {
 				if r.Type == types.RelationshipTypeChild {
 					for _, ri := range r.Ids {
-						c := pp.bp.blockByID(ri)
+						l := pp.bp.blockByID(ri)
 
-						if c.BlockType == types.BlockTypeLine {
-							layout.children = append(layout.children, pp.idLineMap[ri])
-						} else {
-							fmt.Println("TODO LAYOUT", readingOrder, c.BlockType)
+						leafLayout := &Layout{
+							base:       newBase(l, pp.page),
+							noNewLines: true,
 						}
+
+						for _, r := range l.Relationships {
+							if r.Type == types.RelationshipTypeChild {
+								for _, ri := range r.Ids {
+									leafLayout.AddChildren(pp.idLineMap[ri])
+								}
+							}
+						}
+
+						layout.AddChildren(leafLayout)
 					}
 				}
 			}
-
-			layouts = append(layouts, layout)
+		case types.BlockTypeLayoutText, types.BlockTypeLayoutSectionHeader, types.BlockTypeLayoutTitle:
+			layout = &Layout{
+				base:       newBase(b, pp.page),
+				noNewLines: true,
+			}
+		default:
+			layout = &Layout{
+				base:       newBase(b, pp.page),
+				noNewLines: false,
+			}
 		}
 
-		readingOrder++
+		for _, r := range b.Relationships {
+			if r.Type == types.RelationshipTypeChild {
+				for _, ri := range r.Ids {
+					c := pp.bp.blockByID(ri)
+
+					if c.BlockType == types.BlockTypeLine {
+						layout.children = append(layout.children, pp.idLineMap[ri])
+					} else {
+						fmt.Println("TODO LAYOUT", c.BlockType)
+					}
+				}
+			}
+		}
+
+		layouts = append(layouts, layout)
 	}
 
 	if len(layouts) == 0 {
 		lines := internal.Values(pp.idLineMap)
-		layouts = make([]Layout, 0, len(lines))
+		layouts = make([]*Layout, 0, len(lines))
 
-		for i, line := range lines {
-			layout := &LeafLayout{
-				layout:     newLayout(line.Raw(), pp.page, i),
+		for _, line := range lines {
+			layout := &Layout{
+				base:       newBase(line.Raw(), pp.page),
 				noNewLines: false,
 			}
 
-			layout.children = append(layout.children, line)
+			layout.AddChildren(line)
+
 			layouts = append(layouts, layout)
 		}
 	}
@@ -408,6 +414,43 @@ func (pp *pageParser) createSignatures() []*Signature {
 	}
 
 	return signatures
+}
+
+func (pp *pageParser) removeDuplicates() {
+	for _, pl := range pp.page.Layouts() {
+		layoutLineMap := make(map[string]*Line)
+
+		for _, c := range pl.children {
+			if v, ok := c.(*Line); ok {
+				layoutLineMap[v.ID()] = v
+			}
+		}
+
+		for _, c := range pl.children {
+			switch v := c.(type) {
+			case *KeyValue:
+				for _, w := range v.Words() {
+					if v, ok := layoutLineMap[w.line.id]; ok {
+						v.words = slices.DeleteFunc(v.words, func(lw *Word) bool {
+							return lw.ID() == w.ID()
+						})
+
+						if len(v.words) == 0 {
+							pl.children = slices.DeleteFunc(pl.children, func(lc LayoutChild) bool {
+								return lc.ID() == w.line.id
+							})
+						} else {
+							v.boundingBox = NewEnclosingBoundingBox(v.words...)
+						}
+					}
+				}
+			case *Signature:
+				// for _, w := range v.Words() {
+
+				// }
+			} // nolint wsl
+		}
+	}
 }
 
 func (pp *pageParser) blockTypeIDs(blockType types.BlockType) []string {

@@ -59,36 +59,47 @@ func TestBoundingBox(t *testing.T) {
 }
 
 func TestNewEnclosingBoundingBox(t *testing.T) {
-	// Test case 1: Bounding boxes with positive coordinates
-	bbox1 := &BoundingBox{left: 0, top: 0, width: 2, height: 2}
-	bbox2 := &BoundingBox{left: 1, top: 1, width: 2, height: 2}
+	bbox1 := &mockBoundingBoxAccessor{
+		bbox: &BoundingBox{left: 0, top: 0, width: 2, height: 2},
+	}
+	bbox2 := &mockBoundingBoxAccessor{
+		bbox: &BoundingBox{left: 1, top: 1, width: 2, height: 2},
+	}
+
 	result1 := NewEnclosingBoundingBox(bbox1, bbox2)
 	assert.Equal(t, &BoundingBox{left: 0, top: 0, width: 3, height: 3}, result1)
 
-	// Test case 2: Bounding boxes with negative coordinates
-	bbox3 := &BoundingBox{left: -2, top: -2, width: 3, height: 3}
-	bbox4 := &BoundingBox{left: -3, top: -3, width: 2, height: 2}
-	result2 := NewEnclosingBoundingBox(bbox3, bbox4)
+	bbox3 := &mockBoundingBoxAccessor{
+		bbox: &BoundingBox{left: -2, top: -2, width: 3, height: 3},
+	}
+	bbox4 := &mockBoundingBoxAccessor{
+		bbox: &BoundingBox{left: -3, top: -3, width: 2, height: 2},
+	}
 
+	result2 := NewEnclosingBoundingBox(bbox3, bbox4)
 	assert.Equal(t, &BoundingBox{left: -3, top: -3, width: 4, height: 4}, result2)
 
-	// Test case 3: Bounding boxes with one nil
-	result3 := NewEnclosingBoundingBox(nil, bbox1, bbox2)
-	assert.Equal(t, &BoundingBox{left: 0, top: 0, width: 3, height: 3}, result3)
+	bbox5 := &mockBoundingBoxAccessor{
+		bbox: &BoundingBox{left: 0.1, top: 0.2, width: 2.5, height: 2.8},
+	}
+	bbox6 := &mockBoundingBoxAccessor{
+		bbox: &BoundingBox{left: 1.3, top: 1.5, width: 2.2, height: 2.6},
+	}
 
-	// Test case 4: Empty input
-	result4 := NewEnclosingBoundingBox()
-	assert.Nil(t, result4)
-
-	// Test case 5: Bounding boxes with floating-point coordinates
-	bbox5 := &BoundingBox{left: 0.1, top: 0.2, width: 2.5, height: 2.8}
-	bbox6 := &BoundingBox{left: 1.3, top: 1.5, width: 2.2, height: 2.6}
 	result5 := NewEnclosingBoundingBox(bbox5, bbox6)
 	expectedResult5 := &BoundingBox{left: 0.1, top: 0.2, width: 3.4, height: 3.9}
 	assert.InDelta(t, expectedResult5.Left(), result5.Left(), 0.0001, "Floating-point coordinates not within tolerance")
 	assert.InDelta(t, expectedResult5.Top(), result5.Top(), 0.0001, "Floating-point coordinates not within tolerance")
 	assert.InDelta(t, expectedResult5.Width(), result5.Width(), 0.0001, "Floating-point coordinates not within tolerance")
 	assert.InDelta(t, expectedResult5.Height(), result5.Height(), 0.0001, "Floating-point coordinates not within tolerance")
+}
+
+type mockBoundingBoxAccessor struct {
+	bbox *BoundingBox
+}
+
+func (ba *mockBoundingBoxAccessor) BoundingBox() *BoundingBox {
+	return ba.bbox
 }
 
 func TestOrientation(t *testing.T) {

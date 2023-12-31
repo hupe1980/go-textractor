@@ -24,3 +24,7 @@ func (l *Line) Text(_ ...func(*TextLinearizationOptions)) string {
 func (l *Line) Words() []*Word {
 	return l.words
 }
+
+func (l *Line) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string, []*Word) {
+	return l.Text(optFns...), l.Words()
+}

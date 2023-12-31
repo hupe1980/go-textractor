@@ -7,56 +7,30 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/textract/types"
-	"github.com/hupe1980/go-textractor/internal"
 )
 
 type LayoutChild interface {
-	Text(optFns ...func(*TextLinearizationOptions)) string
-	Words() []*Word
-	BoundingBox() *BoundingBox
-}
-
-type Layout interface {
-	BlockType() types.BlockType
-	BoundingBox() *BoundingBox
-	ReadingOrder() int
-	AddChildren(children ...LayoutChild)
-	Text(optFns ...func(*TextLinearizationOptions)) string
+	ID() string
 	TextAndWords(optFns ...func(*TextLinearizationOptions)) (string, []*Word)
+	BoundingBox() *BoundingBox
 }
 
-type layout struct {
+type Layout struct {
 	base
-	readingOrder int
-	children     []LayoutChild
-}
-
-func newLayout(b types.Block, page *Page, readingOrder int) layout {
-	return layout{
-		base:         newBase(b, page),
-		readingOrder: readingOrder,
-	}
-}
-
-func (l *layout) AddChildren(children ...LayoutChild) {
-	l.children = append(l.children, children...)
-}
-
-func (l *layout) ReadingOrder() int {
-	return l.readingOrder
-}
-
-type LeafLayout struct {
-	layout
+	children   []LayoutChild
 	noNewLines bool
 }
 
-func (l *LeafLayout) Text(optFns ...func(*TextLinearizationOptions)) string {
+func (l *Layout) AddChildren(children ...LayoutChild) {
+	l.children = append(l.children, children...)
+}
+
+func (l *Layout) Text(optFns ...func(*TextLinearizationOptions)) string {
 	text, _ := l.TextAndWords(optFns...)
 	return text
 }
 
-func (l *LeafLayout) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string, []*Word) {
+func (l *Layout) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string, []*Word) {
 	opts := DefaultLinerizationOptions
 
 	for _, fn := range optFns {
@@ -81,6 +55,11 @@ func (l *LeafLayout) TextAndWords(optFns ...func(*TextLinearizationOptions)) (st
 
 	text := ""
 	words := make([]*Word, 0)
+	first := true
+
+	sort.Slice(l.children, func(i, j int) bool {
+		return l.children[i].BoundingBox().Top() < l.children[j].BoundingBox().Top()
+	})
 
 	for _, group := range groupElementsHorizontally(l.children, opts.HeuristicOverlapRatio) {
 		sort.Slice(group, func(i, j int) bool {
@@ -88,26 +67,30 @@ func (l *LeafLayout) TextAndWords(optFns ...func(*TextLinearizationOptions)) (st
 		})
 
 		for i, child := range group {
-			childText := child.Text()
-			childWords := child.Words()
-
+			childText, childWords := child.TextAndWords()
 			words = append(words, childWords...)
 
-			if l.BlockType() == types.BlockTypeLayoutTable {
+			if l.BlockType() == types.BlockTypeLayoutTable && len(childWords) > 0 {
 				columnSep := ""
 				if i > 0 {
 					columnSep = opts.TableColumnSeparator
 				}
 
 				text += columnSep + childText
-			} else {
+				// } else if l.BlockType() == types.BlockTypeLayoutKeyValue && len(childWords) > 0 {
+				// 	if opts.AddPrefixesAndSuffixesInText {
+				// 		text += fmt.Sprintf("%s%s%s", opts.KeyValueLayoutPrefix, text, opts.KeyValueLayoutSuffix)
+				// 	}
+			} else { // nolint wsl
 				sep := ""
-				if i > 0 {
+				if !first {
 					sep = opts.LayoutElementSeparator
 				}
 
 				text += sep + childText
 			}
+
+			first = false
 		}
 
 		if l.BlockType() == types.BlockTypeLayoutTable {
@@ -139,47 +122,6 @@ func (l *LeafLayout) TextAndWords(optFns ...func(*TextLinearizationOptions)) (st
 			text = strings.ReplaceAll(text, "  ", " ")
 		}
 	}
-
-	return text, words
-}
-
-type ContainerLayout struct {
-	layout
-	layouts []*LeafLayout
-}
-
-func (l *ContainerLayout) Children() []*LeafLayout {
-	return l.layouts
-}
-
-func (l *ContainerLayout) Text(optFns ...func(*TextLinearizationOptions)) string {
-	text, _ := l.TextAndWords(optFns...)
-	return text
-}
-
-func (l *ContainerLayout) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string, []*Word) {
-	opts := DefaultLinerizationOptions
-
-	for _, fn := range optFns {
-		fn(&opts)
-	}
-
-	sort.Slice(l.layouts, func(i, j int) bool {
-		return l.layouts[i].ReadingOrder() < l.layouts[j].ReadingOrder()
-	})
-
-	layoutText := make([]string, len(l.layouts))
-	layoutWords := make([][]*Word, len(l.layouts))
-
-	for i, leaf := range l.layouts {
-		text, words := leaf.TextAndWords()
-
-		layoutText[i] = text
-		layoutWords[i] = words
-	}
-
-	text := strings.Join(layoutText, opts.ListElementSeparator)
-	words := internal.Concatenate(layoutWords...)
 
 	return text, words
 }
