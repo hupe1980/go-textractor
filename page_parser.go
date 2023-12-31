@@ -197,7 +197,7 @@ func (pp *pageParser) createLayouts() []Layout {
 						for _, r := range b.Relationships {
 							if r.Type == types.RelationshipTypeChild {
 								for _, ri := range r.Ids {
-									leafLayout.lines = append(leafLayout.lines, pp.idLineMap[ri])
+									leafLayout.children = append(leafLayout.children, pp.idLineMap[ri])
 								}
 							}
 						}
@@ -229,7 +229,7 @@ func (pp *pageParser) createLayouts() []Layout {
 						c := pp.bp.blockByID(ri)
 
 						if c.BlockType == types.BlockTypeLine {
-							layout.lines = append(layout.lines, pp.idLineMap[ri])
+							layout.children = append(layout.children, pp.idLineMap[ri])
 						} else {
 							fmt.Println("TODO LAYOUT", readingOrder, c.BlockType)
 						}
@@ -253,7 +253,7 @@ func (pp *pageParser) createLayouts() []Layout {
 				noNewLines: false,
 			}
 
-			layout.lines = append(layout.lines, line)
+			layout.children = append(layout.children, line)
 			layouts = append(layouts, layout)
 		}
 	}
@@ -305,11 +305,39 @@ func (pp *pageParser) createTables() []*Table {
 		}
 
 		for _, id := range filterRelationshipIDsByType(b, types.RelationshipTypeTableTitle) {
-			fmt.Println("TODO TABLE TITLE", id)
+			t := pp.bp.blockByID(id)
+
+			title := &TableTitle{
+				base: newBase(t, pp.page),
+			}
+
+			for _, rid := range filterRelationshipIDsByType(t, types.RelationshipTypeChild) {
+				w := pp.bp.blockByID(rid)
+				if w.BlockType == types.BlockTypeWord {
+					word := pp.newWord(w)
+					title.words = append(title.words, word)
+				}
+			}
+
+			table.title = title
 		}
 
 		for _, id := range filterRelationshipIDsByType(b, types.RelationshipTypeTableFooter) {
-			fmt.Println("TODO TABLE FOOTER", id)
+			f := pp.bp.blockByID(id)
+
+			footer := &TableFooter{
+				base: newBase(f, pp.page),
+			}
+
+			for _, rid := range filterRelationshipIDsByType(f, types.RelationshipTypeChild) {
+				w := pp.bp.blockByID(rid)
+				if w.BlockType == types.BlockTypeWord {
+					word := pp.newWord(w)
+					footer.words = append(footer.words, word)
+				}
+			}
+
+			table.footers = append(table.footers, footer)
 		}
 
 		tables = append(tables, table)
@@ -358,9 +386,11 @@ func (pp *pageParser) createSignatures() []*Signature {
 	for _, id := range ids {
 		b := pp.bp.blockByID(id)
 
-		signatures = append(signatures, &Signature{
+		signature := &Signature{
 			base: newBase(b, pp.page),
-		})
+		}
+
+		signatures = append(signatures, signature)
 	}
 
 	return signatures

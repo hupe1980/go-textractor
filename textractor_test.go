@@ -2,7 +2,6 @@ package textractor
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"os"
 	"testing"
@@ -21,8 +20,6 @@ func TestParseDocumentAPIOutput(t *testing.T) {
 	assert.Equal(t, 24, len(doc.Lines()))
 	assert.Equal(t, 5, len(doc.KeyValues()))
 	assert.Equal(t, 1, len(doc.Tables()))
-
-	fmt.Println(doc.Text())
 }
 
 func loadDocumentAPIOutputTestdata(filename string) (*DocumentAPIOutput, error) { //nolint unparam

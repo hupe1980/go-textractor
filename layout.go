@@ -10,6 +10,12 @@ import (
 	"github.com/hupe1980/go-textractor/internal"
 )
 
+type LayoutChild interface {
+	Text(optFns ...func(*TextLinearizationOptions)) string
+	Words() []*Word
+	BoundingBox() *BoundingBox
+}
+
 type Layout interface {
 	BlockType() types.BlockType
 	ReadingOrder() int
@@ -36,7 +42,7 @@ func (l *layout) ReadingOrder() int {
 type LeafLayout struct {
 	layout
 	noNewLines bool
-	lines      []*Line
+	children   []LayoutChild
 }
 
 func (l *LeafLayout) Text(optFns ...func(*TextLinearizationOptions)) string {
@@ -70,16 +76,16 @@ func (l *LeafLayout) TextAndWords(optFns ...func(*TextLinearizationOptions)) (st
 	text := ""
 	words := make([]*Word, 0)
 
-	for _, group := range groupElementsHorizontally(l.lines, 0.5) {
+	for _, group := range groupElementsHorizontally(l.children, 0.5) {
 		sort.Slice(group, func(i, j int) bool {
 			return group[i].BoundingBox().Left() < group[j].BoundingBox().Left()
 		})
 
-		for i, line := range group {
-			lineText := line.Text()
-			lineWords := line.Words()
+		for i, child := range group {
+			childText := child.Text()
+			childWords := child.Words()
 
-			words = append(words, lineWords...)
+			words = append(words, childWords...)
 
 			if l.BlockType() == types.BlockTypeLayoutTable {
 				columnSep := ""
@@ -87,14 +93,14 @@ func (l *LeafLayout) TextAndWords(optFns ...func(*TextLinearizationOptions)) (st
 					columnSep = opts.TableColumnSeparator
 				}
 
-				text += columnSep + lineText
+				text += columnSep + childText
 			} else {
 				sep := ""
 				if i > 0 {
 					sep = opts.LayoutElementSeparator
 				}
 
-				text += sep + lineText
+				text += sep + childText
 			}
 		}
 
@@ -174,9 +180,9 @@ func (l *ContainerLayout) TextAndWords(optFns ...func(*TextLinearizationOptions)
 
 // groupElementsHorizontally groups elements horizontally based on their vertical positions.
 // It takes a slice of elements and an overlap ratio as parameters, and returns a 2D slice of grouped elements.
-func groupElementsHorizontally(elements []*Line, overlapRatio float64) [][]*Line {
+func groupElementsHorizontally(elements []LayoutChild, overlapRatio float64) [][]LayoutChild {
 	// Create a copy of the elements to avoid modifying the original slice
-	sortedElements := make([]*Line, len(elements))
+	sortedElements := make([]LayoutChild, len(elements))
 	copy(sortedElements, elements)
 
 	// Sort elements based on the top position of their bounding boxes
@@ -184,19 +190,19 @@ func groupElementsHorizontally(elements []*Line, overlapRatio float64) [][]*Line
 		return sortedElements[i].BoundingBox().Top() < sortedElements[j].BoundingBox().Top()
 	})
 
-	var groupedElements [][]*Line
+	var groupedElements [][]LayoutChild
 
 	// Check if the sorted elements slice is empty
 	if len(sortedElements) == 0 {
 		return groupedElements
 	}
 
-	// verticalOverlap calculates the vertical overlap between two lines
-	verticalOverlap := func(line1, line2 *Line) float64 {
-		t1 := float64(line1.BoundingBox().Top())
-		h1 := float64(line1.BoundingBox().Height())
-		t2 := float64(line2.BoundingBox().Top())
-		h2 := float64(line2.BoundingBox().Height())
+	// verticalOverlap calculates the vertical overlap between two children
+	verticalOverlap := func(child1, child2 LayoutChild) float64 {
+		t1 := float64(child1.BoundingBox().Top())
+		h1 := float64(child1.BoundingBox().Height())
+		t2 := float64(child2.BoundingBox().Top())
+		h2 := float64(child2.BoundingBox().Height())
 
 		top := math.Max(t1, t2)
 		bottom := math.Min(t1+h1, t2+h2)
@@ -205,7 +211,7 @@ func groupElementsHorizontally(elements []*Line, overlapRatio float64) [][]*Line
 	}
 
 	// shouldGroup determines whether a line should be grouped with an existing group of lines
-	shouldGroup := func(line *Line, group []*Line) bool {
+	shouldGroup := func(child LayoutChild, group []LayoutChild) bool {
 		if len(group) == 0 {
 			return false
 		}
@@ -217,14 +223,14 @@ func groupElementsHorizontally(elements []*Line, overlapRatio float64) [][]*Line
 
 		totalOverlap := 0.0
 		for _, l := range group {
-			totalOverlap += verticalOverlap(line, l)
+			totalOverlap += verticalOverlap(child, l)
 		}
 
 		return totalOverlap/maxHeight >= overlapRatio
 	}
 
 	// Initialize the first group with the first element
-	currentGroup := []*Line{sortedElements[0]}
+	currentGroup := []LayoutChild{sortedElements[0]}
 
 	// Iterate through the sorted elements and group them horizontally
 	for _, element := range sortedElements[1:] {
@@ -232,7 +238,7 @@ func groupElementsHorizontally(elements []*Line, overlapRatio float64) [][]*Line
 			currentGroup = append(currentGroup, element)
 		} else {
 			groupedElements = append(groupedElements, currentGroup)
-			currentGroup = []*Line{element}
+			currentGroup = []LayoutChild{element}
 		}
 	}
 

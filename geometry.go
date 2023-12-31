@@ -48,6 +48,17 @@ func (bb *BoundingBox) VerticalCenter() float32 {
 	return bb.Top() + bb.Height()/2
 }
 
+// Area calculates and returns the area of the bounding box.
+// If either the width or height of the bounding box is less than zero,
+// the area is considered zero to prevent negative area values.
+func (bb *BoundingBox) Area() float32 {
+	if bb.Width() < 0 || bb.Height() < 0 {
+		return 0
+	}
+
+	return bb.Width() * bb.Height()
+}
+
 // Intersection returns a new bounding box that represents the intersection of two bounding boxes.
 func (bb *BoundingBox) Intersection(other *BoundingBox) *BoundingBox {
 	vtop := float32(math.Max(float64(bb.Top()), float64(other.Top())))

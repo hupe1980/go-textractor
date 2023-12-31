@@ -1,8 +1,10 @@
 package textractor
 
 type Table struct {
-	base  // TODO
-	cells []*TableCell
+	base
+	title   *TableTitle
+	footers []*TableFooter
+	cells   []*TableCell
 }
 
 func (t *Table) Rows() []*TableRow {

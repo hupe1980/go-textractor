@@ -7,6 +7,23 @@ import (
 )
 
 func TestBoundingBox(t *testing.T) {
+	t.Run("Area", func(t *testing.T) {
+		bb1 := &BoundingBox{left: 0, top: 0, width: 4, height: 3}
+		assert.Equal(t, float32(12), bb1.Area(), "Area should be 12 for a bounding box of width 4 and height 3")
+
+		bb2 := &BoundingBox{left: 2, top: 2, width: 0, height: 3}
+		assert.Equal(t, float32(0), bb2.Area(), "Area should be 0 for a bounding box with zero width")
+
+		bb3 := &BoundingBox{left: 2, top: 2, width: 4, height: 0}
+		assert.Equal(t, float32(0), bb3.Area(), "Area should be 0 for a bounding box with zero height")
+
+		bb4 := &BoundingBox{left: 0, top: 0, width: -2, height: 3}
+		assert.Equal(t, float32(0), bb4.Area(), "Area should be 0 for a bounding box with negative width")
+
+		bb5 := &BoundingBox{left: 0, top: 0, width: 2, height: -3}
+		assert.Equal(t, float32(0), bb5.Area(), "Area should be 0 for a bounding box with negative height")
+	})
+
 	t.Run("Intersection", func(t *testing.T) {
 		t.Run("Bounding boxes do not intersect", func(t *testing.T) {
 			bb1 := &BoundingBox{left: 0, top: 0, width: 5, height: 5}

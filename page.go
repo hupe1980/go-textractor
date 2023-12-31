@@ -63,11 +63,11 @@ func (p *Page) Signatures() []*Signature {
 }
 
 func (p *Page) Text(optFns ...func(*TextLinearizationOptions)) string {
-	text, _ := p.TextAndWords(optFns...)
+	text, _ := p.textAndWords(optFns...)
 	return text
 }
 
-func (p *Page) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string, []*Word) {
+func (p *Page) textAndWords(optFns ...func(*TextLinearizationOptions)) (string, []*Word) {
 	pageTexts := make([]string, len(p.layouts))
 	wordLists := make([][]*Word, len(p.layouts))
 
