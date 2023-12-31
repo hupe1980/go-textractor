@@ -18,7 +18,9 @@ type LayoutChild interface {
 
 type Layout interface {
 	BlockType() types.BlockType
+	BoundingBox() *BoundingBox
 	ReadingOrder() int
+	AddChildren(children ...LayoutChild)
 	Text(optFns ...func(*TextLinearizationOptions)) string
 	TextAndWords(optFns ...func(*TextLinearizationOptions)) (string, []*Word)
 }
@@ -26,6 +28,7 @@ type Layout interface {
 type layout struct {
 	base
 	readingOrder int
+	children     []LayoutChild
 }
 
 func newLayout(b types.Block, page *Page, readingOrder int) layout {
@@ -35,6 +38,10 @@ func newLayout(b types.Block, page *Page, readingOrder int) layout {
 	}
 }
 
+func (l *layout) AddChildren(children ...LayoutChild) {
+	l.children = append(l.children, children...)
+}
+
 func (l *layout) ReadingOrder() int {
 	return l.readingOrder
 }
@@ -42,7 +49,6 @@ func (l *layout) ReadingOrder() int {
 type LeafLayout struct {
 	layout
 	noNewLines bool
-	children   []LayoutChild
 }
 
 func (l *LeafLayout) Text(optFns ...func(*TextLinearizationOptions)) string {
@@ -76,7 +82,7 @@ func (l *LeafLayout) TextAndWords(optFns ...func(*TextLinearizationOptions)) (st
 	text := ""
 	words := make([]*Word, 0)
 
-	for _, group := range groupElementsHorizontally(l.children, 0.5) {
+	for _, group := range groupElementsHorizontally(l.children, opts.HeuristicOverlapRatio) {
 		sort.Slice(group, func(i, j int) bool {
 			return group[i].BoundingBox().Left() < group[j].BoundingBox().Left()
 		})
@@ -180,7 +186,7 @@ func (l *ContainerLayout) TextAndWords(optFns ...func(*TextLinearizationOptions)
 
 // groupElementsHorizontally groups elements horizontally based on their vertical positions.
 // It takes a slice of elements and an overlap ratio as parameters, and returns a 2D slice of grouped elements.
-func groupElementsHorizontally(elements []LayoutChild, overlapRatio float64) [][]LayoutChild {
+func groupElementsHorizontally(elements []LayoutChild, overlapRatio float32) [][]LayoutChild {
 	// Create a copy of the elements to avoid modifying the original slice
 	sortedElements := make([]LayoutChild, len(elements))
 	copy(sortedElements, elements)
@@ -226,7 +232,7 @@ func groupElementsHorizontally(elements []LayoutChild, overlapRatio float64) [][
 			totalOverlap += verticalOverlap(child, l)
 		}
 
-		return totalOverlap/maxHeight >= overlapRatio
+		return totalOverlap/maxHeight >= float64(overlapRatio)
 	}
 
 	// Initialize the first group with the first element

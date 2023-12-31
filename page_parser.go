@@ -383,11 +383,25 @@ func (pp *pageParser) createSignatures() []*Signature {
 	ids := pp.blockTypeIDs(types.BlockTypeSignature)
 	signatures := make([]*Signature, 0, len(ids))
 
+	layouts := pp.page.Layouts()
+	sort.Slice(layouts, func(i, j int) bool {
+		return layouts[i].BoundingBox().Top() < layouts[j].BoundingBox().Top()
+	})
+
 	for _, id := range ids {
 		b := pp.bp.blockByID(id)
 
 		signature := &Signature{
 			base: newBase(b, pp.page),
+		}
+
+		for _, l := range layouts {
+			if is := l.BoundingBox().Intersection(signature.BoundingBox()); is != nil {
+				if is.Area() > signature.BoundingBox().Area() {
+					l.AddChildren(signature)
+					break
+				}
+			}
 		}
 
 		signatures = append(signatures, signature)

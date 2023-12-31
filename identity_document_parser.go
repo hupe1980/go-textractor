@@ -45,11 +45,10 @@ func (idp *identityDocumentParser) createFields() ([]*IdentityDocumentField, map
 		}
 
 		field := &IdentityDocumentField{
-			fieldType:           fieldType,
-			fieldTypeConfidence: aws.ToFloat32(f.Type.Confidence),
-			value:               aws.ToString(f.ValueDetection.Text),
-			valueConfidence:     aws.ToFloat32(f.ValueDetection.Confidence),
-			raw:                 f,
+			fieldType:  fieldType,
+			value:      aws.ToString(f.ValueDetection.Text),
+			confidence: aws.ToFloat32(f.ValueDetection.Confidence),
+			raw:        f,
 		}
 
 		if f.ValueDetection.NormalizedValue != nil {

@@ -54,6 +54,10 @@ func (p *Page) KeyValues() []*KeyValue {
 	return p.keyValues
 }
 
+func (p *Page) Layouts() []Layout {
+	return p.layouts
+}
+
 func (p *Page) Queries() []*Query {
 	return p.queries
 }
