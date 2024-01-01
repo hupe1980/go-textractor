@@ -2,6 +2,7 @@ package textractor
 
 import (
 	"slices"
+	"sort"
 	"strings"
 
 	"github.com/hupe1980/go-textractor/internal"
@@ -76,10 +77,19 @@ func (p *Page) Text(optFns ...func(*TextLinearizationOptions)) string {
 }
 
 func (p *Page) textAndWords(optFns ...func(*TextLinearizationOptions)) (string, []*Word) {
-	pageTexts := make([]string, len(p.layouts))
-	wordLists := make([][]*Word, len(p.layouts))
+	// Create a copy of the layouts to avoid modifying the original slice
+	sortedLayouts := make([]*Layout, len(p.layouts))
+	copy(sortedLayouts, p.layouts)
 
-	for i, l := range p.layouts {
+	// Sort layouts based on the reading order
+	sort.Slice(sortedLayouts, func(i, j int) bool {
+		return sortedLayouts[i].BoundingBox().Top() < sortedLayouts[j].BoundingBox().Top()
+	})
+
+	pageTexts := make([]string, len(sortedLayouts))
+	wordLists := make([][]*Word, len(sortedLayouts))
+
+	for i, l := range sortedLayouts {
 		text, words := l.TextAndWords(optFns...)
 
 		pageTexts[i] = text

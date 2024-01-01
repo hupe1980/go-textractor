@@ -8,7 +8,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/textract/types"
 	"github.com/google/uuid"
-	"github.com/hupe1980/go-textractor/internal"
 )
 
 type pageParser struct {
@@ -166,18 +165,32 @@ func (pp *pageParser) createKeyValues() []*KeyValue {
 			page:  pp.page,
 		}
 
-		layout := &Layout{
-			base: newBase(b, pp.page), //FIXME blocktype
-		}
-
-		layout.blockType = types.BlockTypeLayoutKeyValue
-		layout.boundingBox = kv.BoundingBox()
-
-		layout.AddChildren(kv)
-
-		pp.page.AddLayouts(layout)
-
 		keyValues = append(keyValues, kv)
+
+		added := false
+
+		for _, pl := range pp.page.Layouts() {
+			if is := pl.BoundingBox().Intersection(kv.BoundingBox()); is != nil {
+				if !added {
+					pl.AddChildren(kv)
+
+					added = true
+				}
+
+				for _, w := range kv.Words() {
+					pl.children = slices.DeleteFunc(pl.children, func(lc LayoutChild) bool {
+						return lc.ID() == w.line.id
+					})
+					if len(pl.children) == 0 {
+						pp.page.layouts = slices.DeleteFunc(pp.page.layouts, func(l *Layout) bool {
+							return pl.id == l.id
+						})
+					} else {
+						pl.boundingBox = NewEnclosingBoundingBox(pl.children...)
+					}
+				}
+			}
+		}
 	}
 
 	return keyValues
@@ -249,10 +262,9 @@ func (pp *pageParser) createLayouts() []*Layout {
 	}
 
 	if len(layouts) == 0 {
-		lines := internal.Values(pp.idLineMap)
-		layouts = make([]*Layout, 0, len(lines))
+		layouts = make([]*Layout, 0, len(pp.page.Lines()))
 
-		for _, line := range lines {
+		for _, line := range pp.page.Lines() {
 			layout := &Layout{
 				base:       newBase(line.Raw(), pp.page),
 				noNewLines: false,
@@ -414,43 +426,6 @@ func (pp *pageParser) createSignatures() []*Signature {
 	}
 
 	return signatures
-}
-
-func (pp *pageParser) removeDuplicates() {
-	for _, pl := range pp.page.Layouts() {
-		layoutLineMap := make(map[string]*Line)
-
-		for _, c := range pl.children {
-			if v, ok := c.(*Line); ok {
-				layoutLineMap[v.ID()] = v
-			}
-		}
-
-		for _, c := range pl.children {
-			switch v := c.(type) {
-			case *KeyValue:
-				for _, w := range v.Words() {
-					if v, ok := layoutLineMap[w.line.id]; ok {
-						v.words = slices.DeleteFunc(v.words, func(lw *Word) bool {
-							return lw.ID() == w.ID()
-						})
-
-						if len(v.words) == 0 {
-							pl.children = slices.DeleteFunc(pl.children, func(lc LayoutChild) bool {
-								return lc.ID() == w.line.id
-							})
-						} else {
-							v.boundingBox = NewEnclosingBoundingBox(v.words...)
-						}
-					}
-				}
-			case *Signature:
-				// for _, w := range v.Words() {
-
-				// }
-			} // nolint wsl
-		}
-	}
 }
 
 func (pp *pageParser) blockTypeIDs(blockType types.BlockType) []string {

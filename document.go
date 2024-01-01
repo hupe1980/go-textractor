@@ -54,6 +54,16 @@ func (d *Document) KeyValues() []*KeyValue {
 	return internal.Concatenate(keyValues...)
 }
 
+func (d *Document) Signatures() []*Signature {
+	signatures := make([][]*Signature, 0, len(d.Pages()))
+
+	for _, p := range d.Pages() {
+		signatures = append(signatures, p.Signatures())
+	}
+
+	return internal.Concatenate(signatures...)
+}
+
 func (d *Document) Text(optFns ...func(*TextLinearizationOptions)) string {
 	pageTexts := make([]string, len(d.Pages()))
 

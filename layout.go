@@ -53,13 +53,11 @@ func (l *Layout) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string
 		return "", nil
 	}
 
-	text := ""
-	words := make([]*Word, 0)
-	first := true
-
-	sort.Slice(l.children, func(i, j int) bool {
-		return l.children[i].BoundingBox().Top() < l.children[j].BoundingBox().Top()
-	})
+	var (
+		text  string
+		words []*Word
+		prev  LayoutChild
+	)
 
 	for _, group := range groupElementsHorizontally(l.children, opts.HeuristicOverlapRatio) {
 		sort.Slice(group, func(i, j int) bool {
@@ -77,24 +75,32 @@ func (l *Layout) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string
 				}
 
 				text += columnSep + childText
-				// } else if l.BlockType() == types.BlockTypeLayoutKeyValue && len(childWords) > 0 {
-				// 	if opts.AddPrefixesAndSuffixesInText {
-				// 		text += fmt.Sprintf("%s%s%s", opts.KeyValueLayoutPrefix, text, opts.KeyValueLayoutSuffix)
-				// 	}
-			} else { // nolint wsl
+			} else if l.BlockType() == types.BlockTypeLayoutKeyValue && len(childWords) > 0 {
+				if opts.AddPrefixesAndSuffixesInText {
+					text += fmt.Sprintf("%s%s%s", opts.KeyValueLayoutPrefix, childText, opts.KeyValueLayoutSuffix)
+				}
+			} else if partOfSameParagraph(prev, child, opts) {
+				text += opts.SameParagraphSeparator + childText
+			} else {
 				sep := ""
-				if !first {
+				if prev != nil {
 					sep = opts.LayoutElementSeparator
 				}
 
 				text += sep + childText
 			}
 
-			first = false
+			prev = child
 		}
 
 		if l.BlockType() == types.BlockTypeLayoutTable {
 			text += opts.TableRowSeparator
+		}
+
+		prev = &Line{
+			base: base{
+				boundingBox: NewEnclosingBoundingBox(group...),
+			},
 		}
 	}
 
@@ -194,4 +200,13 @@ func groupElementsHorizontally(elements []LayoutChild, overlapRatio float32) [][
 	groupedElements = append(groupedElements, currentGroup)
 
 	return groupedElements
+}
+
+func partOfSameParagraph(child1, child2 LayoutChild, options TextLinearizationOptions) bool {
+	if child1 != nil && child2 != nil {
+		return float32(math.Abs(float64(child1.BoundingBox().Left()-child2.BoundingBox().Left()))) <= options.HeuristicHTolerance*child1.BoundingBox().Width() &&
+			float32(math.Abs(float64(child1.BoundingBox().Top()-child2.BoundingBox().Top()))) <= options.HeuristicOverlapRatio*float32(math.Min(float64(child1.BoundingBox().Height()), float64(child2.BoundingBox().Height())))
+	}
+
+	return false
 }

@@ -65,8 +65,6 @@ func (bp *blockParser) createDocument() *Document {
 		page.queries = pageParser.createQueries()
 		page.signatures = pageParser.createSignatures()
 
-		pageParser.removeDuplicates()
-
 		pages[i] = page
 	}
 
