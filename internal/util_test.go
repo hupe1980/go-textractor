@@ -26,17 +26,22 @@ func TestSum(t *testing.T) {
 func TestMean(t *testing.T) {
 	t.Run("Integegers", func(t *testing.T) {
 		result := Mean([]int{1, 2, 3, 4, 5})
-		assert.Equal(t, float32(3), result)
+		assert.Equal(t, float64(3), result)
 	})
 
-	t.Run("Floats", func(t *testing.T) {
+	t.Run("Floats32", func(t *testing.T) {
 		result := Mean([]float32{1.5, 2.5, 3.5})
-		assert.Equal(t, float32(2.5), result)
+		assert.Equal(t, float64(2.5), result)
+	})
+
+	t.Run("Floats64", func(t *testing.T) {
+		result := Mean([]float64{1.5, 2.5, 3.5})
+		assert.Equal(t, float64(2.5), result)
 	})
 
 	t.Run("EmptySlice", func(t *testing.T) {
 		result := Mean([]int{})
-		assert.Equal(t, float32(0), result)
+		assert.Equal(t, float64(0), result)
 	})
 }
 

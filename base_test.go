@@ -16,7 +16,7 @@ func TestBase(t *testing.T) {
 
 	t.Run("ConfidenceMethod", func(t *testing.T) {
 		b := base{confidence: 0.9}
-		assert.Equal(t, float32(0.9), b.Confidence(), "Confidence method does not return expected value")
+		assert.Equal(t, 0.9, b.Confidence(), "Confidence method does not return expected value")
 	})
 
 	t.Run("BlockTypeMethod", func(t *testing.T) {

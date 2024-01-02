@@ -9,7 +9,7 @@ import (
 func TestGroupElementsHorizontally(t *testing.T) {
 	t.Run("EmptyInput", func(t *testing.T) {
 		elements := []LayoutChild{}
-		overlapRatio := float32(0.5)
+		overlapRatio := 0.5
 		groups := groupElementsHorizontally(elements, overlapRatio)
 		assert.Empty(t, groups, "Expected no groups for empty input")
 	})

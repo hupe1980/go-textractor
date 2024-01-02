@@ -135,7 +135,7 @@ func (l *Layout) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string
 
 // groupElementsHorizontally groups elements horizontally based on their vertical positions.
 // It takes a slice of elements and an overlap ratio as parameters, and returns a 2D slice of grouped elements.
-func groupElementsHorizontally(elements []LayoutChild, overlapRatio float32) [][]LayoutChild {
+func groupElementsHorizontally(elements []LayoutChild, overlapRatio float64) [][]LayoutChild {
 	// Create a copy of the elements to avoid modifying the original slice
 	sortedElements := make([]LayoutChild, len(elements))
 	copy(sortedElements, elements)
@@ -154,10 +154,10 @@ func groupElementsHorizontally(elements []LayoutChild, overlapRatio float32) [][
 
 	// verticalOverlap calculates the vertical overlap between two children
 	verticalOverlap := func(child1, child2 LayoutChild) float64 {
-		t1 := float64(child1.BoundingBox().Top())
-		h1 := float64(child1.BoundingBox().Height())
-		t2 := float64(child2.BoundingBox().Top())
-		h2 := float64(child2.BoundingBox().Height())
+		t1 := child1.BoundingBox().Top()
+		h1 := child1.BoundingBox().Height()
+		t2 := child2.BoundingBox().Top()
+		h2 := child2.BoundingBox().Height()
 
 		top := math.Max(t1, t2)
 		bottom := math.Min(t1+h1, t2+h2)
@@ -173,7 +173,7 @@ func groupElementsHorizontally(elements []LayoutChild, overlapRatio float32) [][
 
 		maxHeight := 0.0
 		for _, l := range group {
-			maxHeight = math.Max(maxHeight, float64(l.BoundingBox().Height()))
+			maxHeight = math.Max(maxHeight, l.BoundingBox().Height())
 		}
 
 		totalOverlap := 0.0
@@ -181,7 +181,7 @@ func groupElementsHorizontally(elements []LayoutChild, overlapRatio float32) [][
 			totalOverlap += verticalOverlap(child, l)
 		}
 
-		return totalOverlap/maxHeight >= float64(overlapRatio)
+		return totalOverlap/maxHeight >= overlapRatio
 	}
 
 	// Initialize the first group with the first element
@@ -205,8 +205,8 @@ func groupElementsHorizontally(elements []LayoutChild, overlapRatio float32) [][
 
 func partOfSameParagraph(child1, child2 LayoutChild, options TextLinearizationOptions) bool {
 	if child1 != nil && child2 != nil {
-		return float32(math.Abs(float64(child1.BoundingBox().Left()-child2.BoundingBox().Left()))) <= options.HeuristicHTolerance*child1.BoundingBox().Width() &&
-			float32(math.Abs(float64(child1.BoundingBox().Top()-child2.BoundingBox().Top()))) <= options.HeuristicOverlapRatio*float32(math.Min(float64(child1.BoundingBox().Height()), float64(child2.BoundingBox().Height())))
+		return math.Abs(child1.BoundingBox().Left()-child2.BoundingBox().Left()) <= options.HeuristicHTolerance*child1.BoundingBox().Width() &&
+			math.Abs(child1.BoundingBox().Top()-child2.BoundingBox().Top()) <= options.HeuristicOverlapRatio*math.Min(child1.BoundingBox().Height(), child2.BoundingBox().Height())
 	}
 
 	return false

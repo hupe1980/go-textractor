@@ -52,6 +52,19 @@ func TestParseDocumentAPIOutput(t *testing.T) {
 	assert.Equal(t, 1, len(doc.Tables()))
 }
 
+func TestParseAnalyzeIDOutput(t *testing.T) {
+	res, err := loadAnalyzeIDOutputTestdata("testdata/test-analyze-id-response.json")
+	assert.NoError(t, err)
+
+	idocuments, err := ParseAnalyzeIDOutput(res)
+	assert.NoError(t, err)
+
+	assert.Equal(t, 1, len(idocuments))
+	assert.Equal(t, 21, len(idocuments[0].Fields()))
+	assert.Equal(t, IdentityDocumentTypeDriverLicenseFront, idocuments[0].IdentityDocumentType())
+	assert.Equal(t, "GARCIA", idocuments[0].FieldByType(IdentityDocumentFieldTypeFirstName).Value())
+}
+
 func loadDocumentAPIOutputTestdata(filename string) (*DocumentAPIOutput, error) {
 	f, err := os.Open(filename)
 	if err != nil {
@@ -66,6 +79,27 @@ func loadDocumentAPIOutputTestdata(filename string) (*DocumentAPIOutput, error) 
 	}
 
 	output := new(DocumentAPIOutput)
+	if err := json.Unmarshal(data, output); err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func loadAnalyzeIDOutputTestdata(filename string) (*AnalyzeIDOutput, error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	defer f.Close()
+
+	data, err := io.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(AnalyzeIDOutput)
 	if err := json.Unmarshal(data, output); err != nil {
 		return nil, err
 	}

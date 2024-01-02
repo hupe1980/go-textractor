@@ -10,6 +10,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const threshold = 0.8
+
 type pageParser struct {
 	bp        *blockParser
 	page      *Page
@@ -467,7 +469,7 @@ func (pp *pageParser) createSignatures() []*Signature {
 
 		for _, l := range layouts {
 			if is := l.BoundingBox().Intersection(signature.BoundingBox()); is != nil {
-				if is.Area() > signature.BoundingBox().Area() {
+				if is.Area() > signature.BoundingBox().Area()*threshold {
 					l.AddChildren(signature)
 					break
 				}

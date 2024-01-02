@@ -59,11 +59,6 @@ type QueryResult struct {
 	text string
 }
 
-// Confidence returns the confidence level of the query result.
-func (qr *QueryResult) Confidence() float32 {
-	return qr.confidence
-}
-
 // Text returns the extracted text from the query result.
 func (qr *QueryResult) Text() string {
 	return qr.text

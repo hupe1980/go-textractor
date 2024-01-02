@@ -24,6 +24,7 @@ const (
 	IdentityDocumentFieldTypeAddress          IdentityDocumentFieldType = "ADDRESS"
 	IdentityDocumentFieldTypeCounty           IdentityDocumentFieldType = "COUNTY"
 	IdentityDocumentFieldTypePlaceOfBirth     IdentityDocumentFieldType = "PLACE_OF_BIRTH"
+	IdentityDocumentFieldTypeMRZCode          IdentityDocumentFieldType = "MRZ_CODE"
 	IdentityDocumentFieldTypeOther            IdentityDocumentFieldType = "Other"
 )
 
@@ -31,7 +32,7 @@ const (
 type IdentityDocumentType string
 
 const (
-	IdentityDocumentTypeDrivingLicense IdentityDocumentType = "DRIVER LICENSE FRONT"
-	IdentityDocumentTypePassport       IdentityDocumentType = "PASSPORT"
-	IdentityDocumentTypeOther          IdentityDocumentType = "OTHER"
+	IdentityDocumentTypeDriverLicenseFront IdentityDocumentType = "DRIVER LICENSE FRONT"
+	IdentityDocumentTypePassport           IdentityDocumentType = "PASSPORT"
+	IdentityDocumentTypeOther              IdentityDocumentType = "OTHER"
 )

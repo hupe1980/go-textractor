@@ -144,13 +144,13 @@ type TextLinearizationOptions struct {
 	SelectionElementNotSelected string
 
 	// HeuristicHTolerance sets how much the line below and above the current line should differ in width to be separated.
-	HeuristicHTolerance float32
+	HeuristicHTolerance float64
 
 	// HeuristicLineBreakThreshold sets how much space is acceptable between two lines before splitting them. Expressed in multiple of min heights.
-	HeuristicLineBreakThreshold float32
+	HeuristicLineBreakThreshold float64
 
 	// HeuristicOverlapRatio sets how much vertical overlap is tolerated between two subsequent lines before merging them into a single line.
-	HeuristicOverlapRatio float32
+	HeuristicOverlapRatio float64
 
 	// SignatureToken is the signature representation in the linearized text.
 	SignatureToken string

@@ -11,8 +11,8 @@ import (
 type Page struct {
 	id         string
 	number     int
-	width      float32
-	height     float32
+	width      float64
+	height     float64
 	childIDs   []string
 	words      []*Word
 	lines      []*Line
@@ -31,11 +31,11 @@ func (p *Page) Number() int {
 	return p.number
 }
 
-func (p *Page) Width() float32 {
+func (p *Page) Width() float64 {
 	return p.width
 }
 
-func (p *Page) Height() float32 {
+func (p *Page) Height() float64 {
 	return p.height
 }
 

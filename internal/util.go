@@ -17,17 +17,17 @@ func Sum[T Number](slice []T) T {
 }
 
 // Mean calculates the mean (average) of the numeric values in the given slice.
-func Mean[T Number](data []T) float32 {
+func Mean[T Number](data []T) float64 {
 	if len(data) == 0 {
 		return 0
 	}
 
-	var sum float32
+	var sum float64
 	for _, d := range data {
-		sum += float32(d)
+		sum += float64(d)
 	}
 
-	return sum / float32(len(data))
+	return sum / float64(len(data))
 }
 
 // Values extracts the values from a map and returns them as a slice.

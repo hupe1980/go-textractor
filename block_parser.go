@@ -50,8 +50,8 @@ func (bp *blockParser) createDocument() *Document {
 		page := &Page{
 			id:       aws.ToString(b.Id),
 			number:   int(aws.ToInt32(b.Page)),
-			width:    b.Geometry.BoundingBox.Width,
-			height:   b.Geometry.BoundingBox.Height,
+			width:    float64(b.Geometry.BoundingBox.Width),
+			height:   float64(b.Geometry.BoundingBox.Height),
 			childIDs: filterRelationshipIDsByType(b, types.RelationshipTypeChild),
 		}
 

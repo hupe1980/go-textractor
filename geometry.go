@@ -6,52 +6,52 @@ import (
 )
 
 type BoundingBox struct {
-	height float32
-	left   float32
-	top    float32
-	width  float32
+	height float64
+	left   float64
+	top    float64
+	width  float64
 }
 
 // Bottom returns the bottom coordinate of the bounding box.
-func (bb *BoundingBox) Bottom() float32 {
+func (bb *BoundingBox) Bottom() float64 {
 	return bb.Top() + bb.Height()
 }
 
 // HorizontalCenter returns the horizontal center coordinate of the bounding box.
-func (bb *BoundingBox) HorizontalCenter() float32 {
+func (bb *BoundingBox) HorizontalCenter() float64 {
 	return bb.Left() + bb.Width()/2
 }
 
-func (bb *BoundingBox) Height() float32 {
+func (bb *BoundingBox) Height() float64 {
 	return bb.height
 }
 
-func (bb *BoundingBox) Left() float32 {
+func (bb *BoundingBox) Left() float64 {
 	return bb.left
 }
 
-func (bb *BoundingBox) Top() float32 {
+func (bb *BoundingBox) Top() float64 {
 	return bb.top
 }
 
-func (bb *BoundingBox) Width() float32 {
+func (bb *BoundingBox) Width() float64 {
 	return bb.width
 }
 
 // Right returns the right coordinate of the bounding box.
-func (bb *BoundingBox) Right() float32 {
+func (bb *BoundingBox) Right() float64 {
 	return bb.Left() + bb.Width()
 }
 
 // VerticalCenter returns the vertical center coordinate of the bounding box.
-func (bb *BoundingBox) VerticalCenter() float32 {
+func (bb *BoundingBox) VerticalCenter() float64 {
 	return bb.Top() + bb.Height()/2
 }
 
 // Area calculates and returns the area of the bounding box.
 // If either the width or height of the bounding box is less than zero,
 // the area is considered zero to prevent negative area values.
-func (bb *BoundingBox) Area() float32 {
+func (bb *BoundingBox) Area() float64 {
 	if bb.Width() < 0 || bb.Height() < 0 {
 		return 0
 	}
@@ -61,12 +61,12 @@ func (bb *BoundingBox) Area() float32 {
 
 // Intersection returns a new bounding box that represents the intersection of two bounding boxes.
 func (bb *BoundingBox) Intersection(other *BoundingBox) *BoundingBox {
-	vtop := float32(math.Max(float64(bb.Top()), float64(other.Top())))
-	vbottom := float32(math.Min(float64(bb.Bottom()), float64(other.Bottom())))
-	visect := float32(math.Max(0, float64(vbottom-vtop)))
-	hleft := float32(math.Max(float64(bb.Left()), float64(other.Left())))
-	hright := float32(math.Min(float64(bb.Right()), float64(other.Right())))
-	hisect := float32(math.Max(0, float64(hright-hleft)))
+	vtop := math.Max(bb.Top(), other.Top())
+	vbottom := math.Min(bb.Bottom(), other.Bottom())
+	visect := math.Max(0, vbottom-vtop)
+	hleft := math.Max(bb.Left(), other.Left())
+	hright := math.Min(bb.Right(), other.Right())
+	hisect := math.Max(0, hright-hleft)
 
 	if hisect > 0 && visect > 0 {
 		return &BoundingBox{
@@ -100,17 +100,17 @@ func NewEnclosingBoundingBox[T BoundingBoxAccessor](accessors ...T) *BoundingBox
 		bboxes = append(bboxes, a.BoundingBox())
 	}
 
-	left, top, right, bottom := float32(math.Inf(1)), float32(math.Inf(1)), float32(math.Inf(-1)), float32(math.Inf(-1))
+	left, top, right, bottom := math.Inf(1), math.Inf(1), math.Inf(-1), math.Inf(-1)
 
 	for _, bb := range bboxes {
 		if bb == nil {
 			continue
 		}
 
-		left = float32(math.Min(float64(left), float64(bb.Left())))
-		top = float32(math.Min(float64(top), float64(bb.Top())))
-		right = float32(math.Max(float64(right), float64(bb.Right())))
-		bottom = float32(math.Max(float64(bottom), float64(bb.Bottom())))
+		left = math.Min(left, bb.Left())
+		top = math.Min(top, bb.Top())
+		right = math.Max(right, bb.Right())
+		bottom = math.Max(bottom, bb.Bottom())
 	}
 
 	return &BoundingBox{
@@ -123,16 +123,16 @@ func NewEnclosingBoundingBox[T BoundingBoxAccessor](accessors ...T) *BoundingBox
 
 // Point represents a 2D point.
 type Point struct {
-	x, y float32
+	x, y float64
 }
 
 // X returns the X coordinate of the point.
-func (p *Point) X() float32 {
+func (p *Point) X() float64 {
 	return p.x
 }
 
 // Y returns the Y coordinate of the point.
-func (p *Point) Y() float32 {
+func (p *Point) Y() float64 {
 	return p.y
 }
 
@@ -148,11 +148,11 @@ type Orientation struct {
 }
 
 // Radians returns the orientation in radians.
-func (o *Orientation) Radians() float32 {
-	return float32(math.Atan2(float64(o.point1.Y()-o.point0.Y()), float64(o.point1.X()-o.point0.X())))
+func (o *Orientation) Radians() float64 {
+	return math.Atan2(o.point1.Y()-o.point0.Y(), o.point1.X()-o.point0.X())
 }
 
 // Degrees returns the orientation in degrees.
-func (o *Orientation) Degrees() float32 {
+func (o *Orientation) Degrees() float64 {
 	return (o.Radians() * 180) / math.Pi
 }

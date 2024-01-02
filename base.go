@@ -8,7 +8,7 @@ import (
 // base represents the base information shared among different types of blocks.
 type base struct {
 	id          string          // Identifier for the block
-	confidence  float32         // Confidence for the block
+	confidence  float64         // Confidence for the block
 	blockType   types.BlockType // Type of the block
 	boundingBox *BoundingBox    // Bounding box information
 	polygon     []*Point        // Polygon information
@@ -21,20 +21,20 @@ func newBase(b types.Block, p *Page) base {
 	polygon := make([]*Point, len(b.Geometry.Polygon))
 	for i, p := range b.Geometry.Polygon {
 		polygon[i] = &Point{
-			x: p.X,
-			y: p.Y,
+			x: float64(p.X),
+			y: float64(p.Y),
 		}
 	}
 
 	return base{
 		id:         aws.ToString(b.Id),
-		confidence: aws.ToFloat32(b.Confidence),
+		confidence: float64(aws.ToFloat32(b.Confidence)),
 		blockType:  b.BlockType,
 		boundingBox: &BoundingBox{
-			height: b.Geometry.BoundingBox.Height,
-			left:   b.Geometry.BoundingBox.Left,
-			top:    b.Geometry.BoundingBox.Top,
-			width:  b.Geometry.BoundingBox.Width,
+			height: float64(b.Geometry.BoundingBox.Height),
+			left:   float64(b.Geometry.BoundingBox.Left),
+			top:    float64(b.Geometry.BoundingBox.Top),
+			width:  float64(b.Geometry.BoundingBox.Width),
 		},
 		polygon: polygon,
 		page:    p,
@@ -48,7 +48,7 @@ func (b *base) ID() string {
 }
 
 // Confidence returns the confidence of the block.
-func (b *base) Confidence() float32 {
+func (b *base) Confidence() float64 {
 	return b.confidence
 }
 

@@ -2,9 +2,9 @@ package textractor
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/textract/types"
-	"github.com/google/uuid"
 )
 
+// SelectionElement represents an element with selection status.
 type SelectionElement struct {
 	base
 	status types.SelectionStatus
@@ -20,12 +20,9 @@ func (se *SelectionElement) IsSelected() bool {
 	return se.Status() == types.SelectionStatusSelected
 }
 
-func (se *SelectionElement) Words() []*Word {
-	_, words := se.TextAndWords()
-	return words
-}
-
-func (se *SelectionElement) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string, []*Word) {
+// Text returns the text representation of the selection element.
+// It considers the selection status and applies linearization options.
+func (se *SelectionElement) Text(optFns ...func(*TextLinearizationOptions)) string {
 	opts := DefaultLinerizationOptions
 
 	for _, fn := range optFns {
@@ -37,27 +34,5 @@ func (se *SelectionElement) TextAndWords(optFns ...func(*TextLinearizationOption
 		text = opts.SelectionElementSelected
 	}
 
-	w := &Word{
-		base: base{
-			id:          uuid.New().String(),
-			confidence:  se.Confidence(),
-			blockType:   types.BlockTypeWord,
-			boundingBox: se.BoundingBox(),
-			page:        se.page,
-		},
-		text: text,
-	}
-
-	w.line = &Line{
-		base: base{
-			id:          uuid.New().String(),
-			confidence:  se.Confidence(),
-			blockType:   types.BlockTypeLine,
-			boundingBox: se.BoundingBox(),
-			page:        se.page,
-		},
-		words: []*Word{w},
-	}
-
-	return text, []*Word{w}
+	return text
 }

@@ -23,8 +23,8 @@ func (kv *KeyValue) Value() *Value {
 }
 
 // Confidence calculates the confidence score for a key value.
-func (kv *KeyValue) Confidence() float32 {
-	scores := make([]float32, 0)
+func (kv *KeyValue) Confidence() float64 {
+	scores := make([]float64, 0)
 
 	if kv.Key() != nil {
 		scores = append(scores, kv.Key().Confidence())
@@ -97,21 +97,12 @@ type Value struct {
 }
 
 func (v *Value) Words() []*Word {
-	if v.selectionElement != nil {
-		return v.selectionElement.Words()
-	}
-
 	return v.words
 }
 
-func (v *Value) Text() string {
-	text, _ := v.TextAndWords()
-	return text
-}
-
-func (v *Value) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string, []*Word) {
+func (v *Value) Text(optFns ...func(*TextLinearizationOptions)) string {
 	if v.selectionElement != nil {
-		return v.selectionElement.TextAndWords(optFns...)
+		return v.selectionElement.Text(optFns...)
 	}
 
 	texts := make([]string, len(v.words))
@@ -129,9 +120,7 @@ func (v *Value) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string,
 		text = strings.ReplaceAll(text, "  ", " ")
 	}
 
-	words := v.words
-
-	return text, words
+	return text
 }
 
 // String returns the string representation of the value.
