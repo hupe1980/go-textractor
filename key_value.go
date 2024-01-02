@@ -50,7 +50,7 @@ func (kv *KeyValue) Words() []*Word {
 	return internal.Concatenate(kv.Key().Words(), kv.Value().Words())
 }
 
-func (kv *KeyValue) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string, []*Word) {
+func (kv *KeyValue) Text(optFns ...func(*TextLinearizationOptions)) string {
 	opts := DefaultLinerizationOptions
 
 	for _, fn := range optFns {
@@ -61,12 +61,10 @@ func (kv *KeyValue) TextAndWords(optFns ...func(*TextLinearizationOptions)) (str
 	valueText := kv.Value().Text()
 
 	if len(keyText) == 0 && len(valueText) == 0 {
-		return "", nil
+		return ""
 	}
 
-	text := fmt.Sprintf("%s %s", keyText, valueText)
-
-	return text, kv.value.words
+	return fmt.Sprintf("%s %s", keyText, valueText)
 }
 
 type Key struct {

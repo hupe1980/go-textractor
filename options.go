@@ -155,11 +155,8 @@ type TextLinearizationOptions struct {
 	// SignatureToken is the signature representation in the linearized text.
 	SignatureToken string
 
-	// AddPrefixesAndSuffixesAsWords controls if the prefixes/suffixes will be inserted in the words returned by `get_text_and_words`.
-	AddPrefixesAndSuffixesAsWords bool
-
-	// AddPrefixesAndSuffixesInText controls if the prefixes/suffixes will be added to the linearized text.
-	AddPrefixesAndSuffixesInText bool
+	// AddPrefixesAndSuffixes controls if the prefixes/suffixes will be added to the linearized text.
+	AddPrefixesAndSuffixes bool
 }
 
 var DefaultLinerizationOptions = TextLinearizationOptions{
@@ -212,6 +209,5 @@ var DefaultLinerizationOptions = TextLinearizationOptions{
 	HeuristicLineBreakThreshold:    0.9,
 	HeuristicOverlapRatio:          0.5,
 	SignatureToken:                 "[SIGNATURE]",
-	AddPrefixesAndSuffixesAsWords:  false,
-	AddPrefixesAndSuffixesInText:   true,
+	AddPrefixesAndSuffixes:         true,
 }

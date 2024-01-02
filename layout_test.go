@@ -47,6 +47,6 @@ func (lc *layoutChildMock) BoundingBox() *BoundingBox {
 	return lc.boundingBox
 }
 
-func (lc *layoutChildMock) TextAndWords(_ ...func(*TextLinearizationOptions)) (string, []*Word) {
-	return "", nil
+func (lc *layoutChildMock) Text(_ ...func(*TextLinearizationOptions)) string {
+	return ""
 }

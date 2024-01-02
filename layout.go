@@ -11,7 +11,7 @@ import (
 
 type LayoutChild interface {
 	ID() string
-	TextAndWords(optFns ...func(*TextLinearizationOptions)) (string, []*Word)
+	Text(optFns ...func(*TextLinearizationOptions)) string
 	BoundingBox() *BoundingBox
 }
 
@@ -65,18 +65,19 @@ func (l *Layout) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string
 		})
 
 		for i, child := range group {
-			childText, childWords := child.TextAndWords()
-			words = append(words, childWords...)
+			childText := child.Text(func(tlo *TextLinearizationOptions) {
+				*tlo = opts
+			})
 
-			if l.BlockType() == types.BlockTypeLayoutTable && len(childWords) > 0 {
+			if l.BlockType() == types.BlockTypeLayoutTable {
 				columnSep := ""
 				if i > 0 {
 					columnSep = opts.TableColumnSeparator
 				}
 
 				text += columnSep + childText
-			} else if l.BlockType() == types.BlockTypeLayoutKeyValue && len(childWords) > 0 {
-				if opts.AddPrefixesAndSuffixesInText {
+			} else if l.BlockType() == types.BlockTypeLayoutKeyValue {
+				if opts.AddPrefixesAndSuffixes {
 					text += fmt.Sprintf("%s%s%s", opts.KeyValueLayoutPrefix, childText, opts.KeyValueLayoutSuffix)
 				}
 			} else if partOfSameParagraph(prev, child, opts) {
@@ -106,15 +107,15 @@ func (l *Layout) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string
 
 	switch l.BlockType() { // nolint exhaustive
 	case types.BlockTypeLayoutPageNumber:
-		if opts.AddPrefixesAndSuffixesInText {
+		if opts.AddPrefixesAndSuffixes {
 			text = fmt.Sprintf("%s%s%s", opts.PageNumberPrefix, text, opts.PageNumberSuffix)
 		}
 	case types.BlockTypeLayoutTitle:
-		if opts.AddPrefixesAndSuffixesInText {
+		if opts.AddPrefixesAndSuffixes {
 			text = fmt.Sprintf("%s%s%s", opts.TitlePrefix, text, opts.TitleSuffix)
 		}
 	case types.BlockTypeLayoutSectionHeader:
-		if opts.AddPrefixesAndSuffixesInText {
+		if opts.AddPrefixesAndSuffixes {
 			text = fmt.Sprintf("%s%s%s", opts.SectionHeaderPrefix, text, opts.SectionHeaderSuffix)
 		}
 	}

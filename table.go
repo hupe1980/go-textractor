@@ -23,14 +23,13 @@ func (t *Table) Words() []*Word {
 	return internal.Concatenate(words...)
 }
 
-func (t *Table) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string, []*Word) {
+func (t *Table) Text(optFns ...func(*TextLinearizationOptions)) string {
 	opts := DefaultLinerizationOptions
 
 	for _, fn := range optFns {
 		fn(&opts)
 	}
 
-	words := t.Words()
 	texts := []string{}
 
 	for _, r := range t.Rows() {
@@ -47,7 +46,7 @@ func (t *Table) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string,
 		texts = append(texts, cellText)
 	}
 
-	return strings.Join(texts, "\n"), words
+	return strings.Join(texts, "\n")
 }
 
 func (t *Table) Rows() []*TableRow {
