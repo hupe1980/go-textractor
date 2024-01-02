@@ -91,13 +91,13 @@ func (pp *pageParser) createLines() []*Line {
 		}
 
 		rIDs := filterRelationshipIDsByType(b, types.RelationshipTypeChild)
-		words := make([]*Word, len(rIDs))
+		words := make([]*Word, 0, len(rIDs))
 
-		for i, rid := range rIDs {
+		for _, rid := range rIDs {
 			wb := pp.bp.blockByID(rid)
 			word := pp.newWord(wb)
 			word.line = line
-			words[i] = word
+			words = append(words, word)
 		}
 
 		sort.Slice(words, func(i, j int) bool {
@@ -167,7 +167,10 @@ func (pp *pageParser) createKeyValues() []*KeyValue {
 
 		keyValues = append(keyValues, kv)
 
-		added := false
+		var (
+			added  bool
+			delIDs []string
+		)
 
 		for _, pl := range pp.page.Layouts() {
 			if is := pl.BoundingBox().Intersection(kv.BoundingBox()); is != nil {
@@ -177,20 +180,28 @@ func (pp *pageParser) createKeyValues() []*KeyValue {
 					added = true
 				}
 
+			wordloop:
 				for _, w := range kv.Words() {
 					pl.children = slices.DeleteFunc(pl.children, func(lc LayoutChild) bool {
-						return lc.ID() == w.line.id
+						return lc.ID() == w.line.ID()
 					})
+
 					if len(pl.children) == 0 {
-						pp.page.layouts = slices.DeleteFunc(pp.page.layouts, func(l *Layout) bool {
-							return pl.id == l.id
-						})
-					} else {
-						pl.boundingBox = NewEnclosingBoundingBox(pl.children...)
+						break wordloop
 					}
+				}
+
+				if len(pl.children) == 0 {
+					delIDs = append(delIDs, pl.ID())
+				} else {
+					pl.boundingBox = NewEnclosingBoundingBox(pl.children...)
 				}
 			}
 		}
+
+		pp.page.layouts = slices.DeleteFunc(pp.page.layouts, func(l *Layout) bool {
+			return slices.Contains(delIDs, l.ID())
+		})
 	}
 
 	return keyValues
@@ -266,7 +277,13 @@ func (pp *pageParser) createLayouts() []*Layout {
 
 		for _, line := range pp.page.Lines() {
 			layout := &Layout{
-				base:       newBase(line.Raw(), pp.page),
+				base: base{
+					id:          uuid.New().String(),
+					confidence:  line.Confidence(),
+					blockType:   types.BlockTypeLayoutText,
+					boundingBox: line.BoundingBox(),
+					page:        pp.page,
+				},
 				noNewLines: false,
 			}
 
@@ -350,8 +367,7 @@ func (pp *pageParser) createTables() []*Table {
 			for _, rid := range filterRelationshipIDsByType(f, types.RelationshipTypeChild) {
 				w := pp.bp.blockByID(rid)
 				if w.BlockType == types.BlockTypeWord {
-					word := pp.newWord(w)
-					footer.words = append(footer.words, word)
+					footer.words = append(footer.words, pp.newWord(w))
 				}
 			}
 
@@ -359,6 +375,42 @@ func (pp *pageParser) createTables() []*Table {
 		}
 
 		tables = append(tables, table)
+
+		var (
+			added  bool
+			delIDs []string
+		)
+
+		for _, pl := range pp.page.Layouts() {
+			if is := pl.BoundingBox().Intersection(table.BoundingBox()); is != nil {
+				if !added {
+					pl.AddChildren(table)
+
+					added = true
+				}
+
+			wordloop:
+				for _, w := range table.Words() {
+					pl.children = slices.DeleteFunc(pl.children, func(lc LayoutChild) bool {
+						return lc.ID() == w.line.ID()
+					})
+
+					if len(pl.children) == 0 {
+						break wordloop
+					}
+				}
+
+				if len(pl.children) == 0 {
+					delIDs = append(delIDs, pl.ID())
+				} else {
+					pl.boundingBox = NewEnclosingBoundingBox(pl.children...)
+				}
+			}
+		}
+
+		pp.page.layouts = slices.DeleteFunc(pp.page.layouts, func(l *Layout) bool {
+			return slices.Contains(delIDs, l.ID())
+		})
 	}
 
 	return tables

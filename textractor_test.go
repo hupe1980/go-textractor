@@ -10,6 +10,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// func TestTable(t *testing.T) {
+// 	res, err := loadDocumentAPIOutputTestdata("testdata/table-example-response.json")
+// 	assert.NoError(t, err)
+
+// 	doc, err := ParseDocumentAPIOutput(res)
+// 	assert.NoError(t, err)
+
+// 	fmt.Println(doc.Text())
+// }
+
 func TestParseDocumentAPIOutputForLLM(t *testing.T) {
 	res, err := loadDocumentAPIOutputTestdata("testdata/test-response-for-llm.json")
 	assert.NoError(t, err)

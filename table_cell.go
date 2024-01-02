@@ -21,6 +21,10 @@ func (tc *TableCell) Confidence() float32 {
 	return tc.confidence
 }
 
+func (tc *TableCell) Words() []*Word {
+	return tc.words
+}
+
 func (tc *TableCell) Text() string {
 	texts := make([]string, len(tc.words))
 	for i, w := range tc.words {
