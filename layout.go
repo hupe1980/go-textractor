@@ -49,23 +49,42 @@ func (l *Layout) Text(optFns ...func(*TextLinearizationOptions)) string {
 			return group[i].BoundingBox().Left() < group[j].BoundingBox().Left()
 		})
 
-		for _, child := range group {
+		addRowSeparatorIfTableLayout := true
+
+		for i, child := range group {
 			childText := child.Text(func(tlo *TextLinearizationOptions) {
 				*tlo = opts
 			})
 
-			if partOfSameParagraph(prev, child, opts) {
-				text += opts.SameParagraphSeparator + childText
-			} else {
-				sep := ""
-				if prev != nil {
-					sep = opts.LayoutElementSeparator
+			switch child.(type) {
+			case *Table, *KeyValue:
+				text += childText
+				addRowSeparatorIfTableLayout = false
+			default:
+				if l.BlockType() == types.BlockTypeLayoutTable {
+					sep := opts.TableColumnSeparator
+					if i == 0 {
+						sep = ""
+					}
+
+					text += sep + childText
+				} else if partOfSameParagraph(prev, child, opts) {
+					text += opts.SameParagraphSeparator + childText
+				} else {
+					sep := ""
+					if prev != nil {
+						sep = opts.LayoutElementSeparator
+					}
+
+					text += sep + childText
 				}
 
-				text += sep + childText
+				prev = child
 			}
+		}
 
-			prev = child
+		if l.BlockType() == types.BlockTypeLayoutTable && addRowSeparatorIfTableLayout {
+			text = text + opts.TableRowSeparator
 		}
 
 		prev = &Line{

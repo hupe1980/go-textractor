@@ -1,7 +1,6 @@
 package textractor
 
 import (
-	"fmt"
 	"slices"
 	"sort"
 
@@ -285,8 +284,6 @@ func (pp *pageParser) createLayouts() []*Layout {
 
 					if c.BlockType == types.BlockTypeLine {
 						layout.children = append(layout.children, pp.idLineMap[ri])
-					} else {
-						fmt.Println("TODO LAYOUT", c.BlockType)
 					}
 				}
 			}

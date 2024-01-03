@@ -11,6 +11,45 @@ import (
 )
 
 func TestParseDocumentAPIOutput(t *testing.T) {
+	t.Run("Layout table without table", func(t *testing.T) {
+		res, err := loadDocumentAPIOutputTestdata("testdata/test-layout-table-without-table.json")
+		assert.NoError(t, err)
+
+		doc, err := ParseDocumentAPIOutput(res)
+		assert.NoError(t, err)
+
+		assert.Equal(t, 0, len(doc.Tables()))
+
+		text := doc.Text(func(tlo *TextLinearizationOptions) {
+			tlo.HideFigureLayout = true
+			tlo.TitlePrefix = "# "
+			tlo.SectionHeaderPrefix = "## "
+		})
+
+		//fmt.Println(text)
+
+		assert.Equal(t, `
+
+(a) Original
+(b) Reconstructed
+Figure 3. Example for the Learn To Reconstruct task output on the IIT-CDIP dataset
+Table 1. Entity-level F1 scores of two entity extraction tasks: FUNSD and CORD.
+## 4.4. Ablation Study
+We conduct an extensive ablation study using the CORD dataset.
+Model	#param (M)	FUNSD	CORD
+LayoutLMvl-base	160	79.27	-
+LayoutLMvl-large	390	77.89	94.93
+LayoutLMv2-base	200	82.76	94.95
+TILT-base	230	-	95.11
+LayoutLMv2-large	426	84.20	96.01
+TILT-large	780	-	96.33
+DocFormer-base	183	83.34	96.33
+DocFormer-large	533	84.55	96.99
+MATrIX (ours)	166	78.60	96.05
+
+`, text[:575])
+	})
+
 	t.Run("SimpleTableLayout", func(t *testing.T) {
 		res, err := loadDocumentAPIOutputTestdata("testdata/test-simple-table-layout.json")
 		//res, err := loadDocumentAPIOutputTestdata("testdata/table-example-response.json")
