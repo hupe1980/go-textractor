@@ -42,6 +42,16 @@ func newPageParser(bp *blockParser, page *Page) *pageParser {
 	}
 }
 
+func (pp *pageParser) addPageElements() {
+	pp.page.lines = pp.createLines()
+	pp.page.layouts = pp.createLayouts()
+	pp.page.keyValues = pp.createKeyValues()
+	pp.page.tables = pp.createTables()
+	pp.page.words = pp.createWords()
+	pp.page.queries = pp.createQueries()
+	pp.page.signatures = pp.createSignatures()
+}
+
 func (pp *pageParser) newWord(b types.Block) *Word {
 	if val, ok := pp.idWordMap[aws.ToString(b.Id)]; ok {
 		return val
@@ -96,8 +106,7 @@ func (pp *pageParser) createLines() []*Line {
 		words := make([]*Word, 0, len(rIDs))
 
 		for _, rid := range rIDs {
-			wb := pp.bp.blockByID(rid)
-			word := pp.newWord(wb)
+			word := pp.newWord(pp.bp.blockByID(rid))
 			word.line = line
 			words = append(words, word)
 		}
@@ -136,8 +145,7 @@ func (pp *pageParser) createKeyValues() []*KeyValue {
 		}
 
 		for _, wid := range filterRelationshipIDsByType(b, types.RelationshipTypeChild) {
-			wb := pp.bp.blockByID(wid)
-			word := pp.newWord(wb)
+			word := pp.newWord(pp.bp.blockByID(wid))
 			key.words = append(key.words, word)
 		}
 
@@ -151,8 +159,7 @@ func (pp *pageParser) createKeyValues() []*KeyValue {
 		for _, cid := range filterRelationshipIDsByType(v, types.RelationshipTypeChild) {
 			wb := pp.bp.blockByID(cid)
 			if wb.BlockType == types.BlockTypeWord {
-				word := pp.newWord(wb)
-				value.words = append(value.words, word)
+				value.words = append(value.words, pp.newWord(wb))
 			} else if wb.BlockType == types.BlockTypeSelectionElement {
 				value.selectionElement = &SelectionElement{
 					base:   newBase(wb, pp.page),
@@ -176,7 +183,7 @@ func (pp *pageParser) createKeyValues() []*KeyValue {
 
 		for _, pl := range pp.page.Layouts() {
 			if is := pl.BoundingBox().Intersection(kv.BoundingBox()); is != nil {
-				if !added {
+				if !added && pl.blockType == types.BlockTypeLayoutKeyValue {
 					pl.AddChildren(kv)
 
 					added = true
@@ -199,6 +206,20 @@ func (pp *pageParser) createKeyValues() []*KeyValue {
 					pl.boundingBox = NewEnclosingBoundingBox(pl.children...)
 				}
 			}
+		}
+
+		if !added {
+			pp.page.layouts = append(pp.page.layouts, &Layout{
+				base: base{
+					id:          uuid.New().String(),
+					confidence:  kv.Confidence(),
+					blockType:   types.BlockTypeLayoutKeyValue,
+					boundingBox: kv.BoundingBox(),
+					//polygon:     kv.Polygon(),
+					page: kv.page,
+				},
+				children: []LayoutChild{kv},
+			})
 		}
 
 		pp.page.layouts = slices.DeleteFunc(pp.page.layouts, func(l *Layout) bool {
@@ -309,17 +330,14 @@ func (pp *pageParser) createTables() []*Table {
 			base: newBase(b, pp.page),
 		}
 
+		idCellMap := make(map[string]*TableCell, 0)
+
 		for _, cid := range filterRelationshipIDsByType(b, types.RelationshipTypeChild) {
 			c := pp.bp.blockByID(cid)
 
 			if c.BlockType == types.BlockTypeCell {
 				cell := &TableCell{
-					base:        newBase(c, pp.page),
-					rowIndex:    int(aws.ToInt32(c.RowIndex)),
-					columnIndex: int(aws.ToInt32(c.ColumnIndex)),
-					rowSpan:     int(aws.ToInt32(c.RowSpan)),
-					columnSpan:  int(aws.ToInt32(c.ColumnSpan)),
-					entityTypes: c.EntityTypes,
+					cell: newCell(c, pp.page),
 				}
 
 				for _, rid := range filterRelationshipIDsByType(c, types.RelationshipTypeChild) {
@@ -332,13 +350,36 @@ func (pp *pageParser) createTables() []*Table {
 
 						cell.words = append(cell.words, word)
 					case types.BlockTypeSelectionElement:
-						// TODO
-						fmt.Println("TODO SelectionElement TABLE CELL")
+						cell.selectionElement = &SelectionElement{
+							base:   newBase(c, pp.page),
+							status: c.SelectionStatus,
+						}
 					}
 				}
 
+				idCellMap[cell.ID()] = cell
 				table.cells = append(table.cells, cell)
 			}
+		}
+
+		for _, id := range filterRelationshipIDsByType(b, types.RelationshipTypeMergedCell) {
+			mc := pp.bp.blockByID(id)
+
+			mergedCell := &TableMergedCell{
+				cell: newCell(mc, pp.page),
+			}
+
+			cellIDs := filterRelationshipIDsByType(mc, types.RelationshipTypeChild)
+
+			mergedCell.cells = make([]*TableCell, 0, len(cellIDs))
+
+			for _, rid := range cellIDs {
+				if cell, ok := idCellMap[rid]; ok {
+					mergedCell.cells = append(mergedCell.cells, cell)
+				}
+			}
+
+			table.mergedCells = append(table.mergedCells, mergedCell)
 		}
 
 		for _, id := range filterRelationshipIDsByType(b, types.RelationshipTypeTableTitle) {
@@ -385,7 +426,7 @@ func (pp *pageParser) createTables() []*Table {
 
 		for _, pl := range pp.page.Layouts() {
 			if is := pl.BoundingBox().Intersection(table.BoundingBox()); is != nil {
-				if !added {
+				if !added && pl.blockType == types.BlockTypeLayoutTable {
 					pl.AddChildren(table)
 
 					added = true
@@ -408,6 +449,20 @@ func (pp *pageParser) createTables() []*Table {
 					pl.boundingBox = NewEnclosingBoundingBox(pl.children...)
 				}
 			}
+		}
+
+		if !added {
+			pp.page.layouts = append(pp.page.layouts, &Layout{
+				base: base{
+					id:          uuid.New().String(),
+					confidence:  table.Confidence(),
+					blockType:   types.BlockTypeLayoutTable,
+					boundingBox: table.BoundingBox(),
+					polygon:     table.Polygon(),
+					page:        table.page,
+				},
+				children: []LayoutChild{table},
+			})
 		}
 
 		pp.page.layouts = slices.DeleteFunc(pp.page.layouts, func(l *Layout) bool {

@@ -20,13 +20,3 @@ func (s *Signature) Text(optFns ...func(*TextLinearizationOptions)) string {
 
 	return opts.SignatureToken
 }
-
-func (s *Signature) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string, []*Word) {
-	opts := DefaultLinerizationOptions
-
-	for _, fn := range optFns {
-		fn(&opts)
-	}
-
-	return opts.SignatureToken, nil
-}

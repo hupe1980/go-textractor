@@ -59,20 +59,8 @@ type TextLinearizationOptions struct {
 	// TitleSuffix is the suffix for title layout elements.
 	TitleSuffix string
 
-	// TableLayoutPrefix is the prefix for table elements.
-	TableLayoutPrefix string
-
-	// TableLayoutSuffix is the suffix for table elements.
-	TableLayoutSuffix string
-
-	// TableRemoveColumnHeaders removes column headers from tables.
-	TableRemoveColumnHeaders bool
-
 	// TableLinearizationFormat sets how to represent tables in the linearized output. Choices are plaintext or markdown.
 	TableLinearizationFormat string
-
-	// TableTabulateFormat is the markdown tabulate format to use when tables are linearized as markdown.
-	TableTabulateFormat string
 
 	// TableMinTableWords is the threshold below which tables will be rendered as words instead of using table layout.
 	TableMinTableWords int
@@ -112,12 +100,6 @@ type TextLinearizationOptions struct {
 
 	// TextSuffix is the suffix for text layout elements.
 	TextSuffix string
-
-	// KeyValueLayoutPrefix is the prefix for key_value layout elements (not for individual key-value elements).
-	KeyValueLayoutPrefix string
-
-	// KeyValueLayoutSuffix is the suffix for key_value layout elements (not for individual key-value elements).
-	KeyValueLayoutSuffix string
 
 	// KeyValuePrefix is the prefix for key-value elements.
 	KeyValuePrefix string
@@ -179,11 +161,7 @@ var DefaultLinerizationOptions = TextLinearizationOptions{
 	ListElementSuffix:              "",
 	TitlePrefix:                    "",
 	TitleSuffix:                    "",
-	TableLayoutPrefix:              "\n\n",
-	TableLayoutSuffix:              "\n",
-	TableRemoveColumnHeaders:       false,
 	TableLinearizationFormat:       "plaintext",
-	TableTabulateFormat:            "github",
 	TableMinTableWords:             0,
 	TableColumnSeparator:           "\t",
 	TablePrefix:                    "",
@@ -197,10 +175,10 @@ var DefaultLinerizationOptions = TextLinearizationOptions{
 	SectionHeaderSuffix:            "",
 	TextPrefix:                     "",
 	TextSuffix:                     "",
-	KeyValueLayoutPrefix:           "\n\n",
-	KeyValueLayoutSuffix:           "",
 	KeyValuePrefix:                 "",
 	KeyValueSuffix:                 "",
+	KeyPrefix:                      "",
+	KeySuffix:                      "",
 	ValuePrefix:                    "",
 	ValueSuffix:                    "",
 	SelectionElementSelected:       "[X]",

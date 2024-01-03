@@ -26,37 +26,22 @@ func (l *Layout) AddChildren(children ...LayoutChild) {
 }
 
 func (l *Layout) Text(optFns ...func(*TextLinearizationOptions)) string {
-	text, _ := l.TextAndWords(optFns...)
-	return text
-}
-
-func (l *Layout) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string, []*Word) {
 	opts := DefaultLinerizationOptions
 
 	for _, fn := range optFns {
 		fn(&opts)
 	}
 
-	if l.BlockType() == types.BlockTypeLayoutHeader && opts.HideHeaderLayout {
-		return "", nil
-	}
-
-	if l.BlockType() == types.BlockTypeLayoutFooter && opts.HideFooterLayout {
-		return "", nil
-	}
-
-	if l.BlockType() == types.BlockTypeLayoutFigure && opts.HideFigureLayout {
-		return "", nil
-	}
-
-	if l.BlockType() == types.BlockTypeLayoutPageNumber && opts.HidePageNumberLayout {
-		return "", nil
+	if (l.BlockType() == types.BlockTypeLayoutHeader && opts.HideHeaderLayout) ||
+		(l.BlockType() == types.BlockTypeLayoutFooter && opts.HideFooterLayout) ||
+		(l.BlockType() == types.BlockTypeLayoutFigure && opts.HideFigureLayout) ||
+		(l.BlockType() == types.BlockTypeLayoutPageNumber && opts.HidePageNumberLayout) {
+		return ""
 	}
 
 	var (
-		text  string
-		words []*Word
-		prev  LayoutChild
+		text string
+		prev LayoutChild
 	)
 
 	for _, group := range groupElementsHorizontally(l.children, opts.HeuristicOverlapRatio) {
@@ -64,23 +49,12 @@ func (l *Layout) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string
 			return group[i].BoundingBox().Left() < group[j].BoundingBox().Left()
 		})
 
-		for i, child := range group {
+		for _, child := range group {
 			childText := child.Text(func(tlo *TextLinearizationOptions) {
 				*tlo = opts
 			})
 
-			if l.BlockType() == types.BlockTypeLayoutTable {
-				columnSep := ""
-				if i > 0 {
-					columnSep = opts.TableColumnSeparator
-				}
-
-				text += columnSep + childText
-			} else if l.BlockType() == types.BlockTypeLayoutKeyValue {
-				if opts.AddPrefixesAndSuffixes {
-					text += fmt.Sprintf("%s%s%s", opts.KeyValueLayoutPrefix, childText, opts.KeyValueLayoutSuffix)
-				}
-			} else if partOfSameParagraph(prev, child, opts) {
+			if partOfSameParagraph(prev, child, opts) {
 				text += opts.SameParagraphSeparator + childText
 			} else {
 				sep := ""
@@ -94,14 +68,20 @@ func (l *Layout) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string
 			prev = child
 		}
 
-		if l.BlockType() == types.BlockTypeLayoutTable {
-			text += opts.TableRowSeparator
-		}
-
 		prev = &Line{
 			base: base{
 				boundingBox: NewEnclosingBoundingBox(group...),
 			},
+		}
+	}
+
+	if l.noNewLines {
+		// Replace all occurrences of \n with a space
+		text = strings.ReplaceAll(text, "\n", " ")
+
+		// Replace consecutive spaces with a single space
+		for strings.Contains(text, "  ") {
+			text = strings.ReplaceAll(text, "  ", " ")
 		}
 	}
 
@@ -120,17 +100,14 @@ func (l *Layout) TextAndWords(optFns ...func(*TextLinearizationOptions)) (string
 		}
 	}
 
-	if l.noNewLines {
-		// Replace all occurrences of \n with a space
-		text = strings.ReplaceAll(text, "\n", " ")
+	invalidSeparator := strings.Repeat("\n", opts.MaxNumberOfConsecutiveNewLines+1)
+	validSeperator := strings.Repeat("\n", opts.MaxNumberOfConsecutiveNewLines)
 
-		// Replace consecutive spaces with a single space
-		for strings.Contains(text, "  ") {
-			text = strings.ReplaceAll(text, "  ", " ")
-		}
+	for strings.Contains(text, invalidSeparator) {
+		text = strings.ReplaceAll(text, invalidSeparator, validSeperator)
 	}
 
-	return text, words
+	return text
 }
 
 // groupElementsHorizontally groups elements horizontally based on their vertical positions.

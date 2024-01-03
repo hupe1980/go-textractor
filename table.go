@@ -1,16 +1,21 @@
 package textractor
 
 import (
+	"cmp"
+	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/hupe1980/go-textractor/internal"
+	"github.com/olekukonko/tablewriter"
 )
 
 type Table struct {
 	base
-	title   *TableTitle
-	footers []*TableFooter
-	cells   []*TableCell
+	title       *TableTitle
+	footers     []*TableFooter
+	mergedCells []*TableMergedCell
+	cells       []*TableCell
 }
 
 func (t *Table) Words() []*Word {
@@ -30,45 +35,140 @@ func (t *Table) Text(optFns ...func(*TextLinearizationOptions)) string {
 		fn(&opts)
 	}
 
-	texts := []string{}
+	var tableText string
 
-	for _, r := range t.Rows() {
-		cellText := ""
+	switch opts.TableLinearizationFormat {
+	case "plaintext":
+		texts := []string{}
 
-		for i, c := range r.Cells() {
+		for _, r := range t.Rows() {
+			cellText := ""
+
+			for i, c := range r.Cells() {
+				if i == 0 {
+					cellText += c.Text()
+				} else {
+					cellText += opts.TableColumnSeparator + c.Text()
+				}
+			}
+
+			texts = append(texts, cellText)
+		}
+
+		tableText = strings.Join(texts, opts.TableRowSeparator)
+	case "markdown":
+		tableString := &strings.Builder{}
+
+		tw := tablewriter.NewWriter(tableString)
+		tw.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+		tw.SetCenterSeparator("|")
+
+		var (
+			header []string
+			data   [][]string
+		)
+
+		for i, r := range t.Rows() {
 			if i == 0 {
-				cellText += c.Text()
+				header = make([]string, 0, len(r.Cells()))
+				for _, c := range r.Cells() {
+					header = append(header, c.Text())
+				}
 			} else {
-				cellText += "\t" + c.Text()
+				rowData := make([]string, 0, len(r.Cells()))
+				for _, c := range r.Cells() {
+					rowData = append(rowData, c.Text())
+				}
+
+				data = append(data, rowData)
 			}
 		}
 
-		texts = append(texts, cellText)
+		tw.SetHeader(header)
+		tw.AppendBulk(data)
+		tw.Render()
+
+		tableText = tableString.String()
+	default:
+		panic(fmt.Sprintf("unknown table format: %s", opts.TableLinearizationFormat))
 	}
 
-	return strings.Join(texts, "\n")
+	if opts.AddPrefixesAndSuffixes {
+		tableText = fmt.Sprintf("%s%s%s", opts.TablePrefix, tableText, opts.TableSuffix)
+	}
+
+	return tableText
 }
 
-func (t *Table) Rows() []*TableRow {
-	cellsPerRow := make(map[int][]*TableCell, 0)
-	for _, c := range t.cells {
-		cellsPerRow[c.rowIndex] = append(cellsPerRow[c.rowIndex], c)
-	}
+func (t *Table) RowCount() int {
+	max := slices.MaxFunc(t.cells, func(a, b *TableCell) int {
+		return cmp.Compare(a.rowIndex+a.rowSpan-1, b.rowIndex+b.rowSpan-1)
+	})
 
-	rows := make([]*TableRow, len(cellsPerRow))
-	for k, v := range cellsPerRow {
-		rows[k-1] = &TableRow{
-			cells: v,
+	return max.rowIndex
+}
+
+func (t *Table) CellAt(rowIndex, columnIndex int) Cell {
+	for _, mc := range t.mergedCells {
+		if mc.columnIndex <= columnIndex &&
+			mc.columnIndex+mc.columnSpan > columnIndex &&
+			mc.rowIndex <= rowIndex &&
+			mc.rowIndex+mc.rowSpan > rowIndex {
+			return mc
 		}
 	}
 
-	return rows
+	for _, c := range t.cells {
+		if c.columnIndex == columnIndex && c.rowIndex == rowIndex {
+			return c
+		}
+	}
+
+	return nil
+}
+
+func (t *Table) RowCellsAt(rowIndex int) []Cell {
+	cells := make([]Cell, 0)
+	mergedCellIDs := make([]string, 0)
+	ignoreMergedCells := true
+
+	if !ignoreMergedCells {
+		for _, mc := range t.mergedCells {
+			if mc.rowIndex <= rowIndex && mc.rowIndex+mc.rowSpan > rowIndex {
+				cells = append(cells, mc)
+				for _, c := range mc.cells {
+					mergedCellIDs = append(mergedCellIDs, c.ID())
+				}
+			}
+		}
+	}
+
+	for _, c := range t.cells {
+		if c.rowIndex == rowIndex && !slices.Contains(mergedCellIDs, c.ID()) {
+			cells = append(cells, c)
+		}
+	}
+
+	return cells
 }
 
 type TableRow struct {
-	cells []*TableCell
+	cells []Cell
 }
 
-func (tr *TableRow) Cells() []*TableCell {
+func (tr *TableRow) Cells() []Cell {
 	return tr.cells
+}
+
+func (t *Table) Rows() []*TableRow {
+	rowCount := t.RowCount()
+	rows := make([]*TableRow, 0, rowCount)
+
+	for i := 1; i <= rowCount; i++ {
+		rows = append(rows, &TableRow{
+			cells: t.RowCellsAt(i),
+		})
+	}
+
+	return rows
 }

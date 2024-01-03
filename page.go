@@ -4,8 +4,6 @@ import (
 	"slices"
 	"sort"
 	"strings"
-
-	"github.com/hupe1980/go-textractor/internal"
 )
 
 type Page struct {
@@ -72,11 +70,6 @@ func (p *Page) AddLayouts(layouts ...*Layout) {
 }
 
 func (p *Page) Text(optFns ...func(*TextLinearizationOptions)) string {
-	text, _ := p.textAndWords(optFns...)
-	return text
-}
-
-func (p *Page) textAndWords(optFns ...func(*TextLinearizationOptions)) (string, []*Word) {
 	// Create a copy of the layouts to avoid modifying the original slice
 	sortedLayouts := make([]*Layout, len(p.layouts))
 	copy(sortedLayouts, p.layouts)
@@ -87,16 +80,14 @@ func (p *Page) textAndWords(optFns ...func(*TextLinearizationOptions)) (string, 
 	})
 
 	pageTexts := make([]string, len(sortedLayouts))
-	wordLists := make([][]*Word, len(sortedLayouts))
 
 	for i, l := range sortedLayouts {
-		text, words := l.TextAndWords(optFns...)
+		text := l.Text(optFns...)
 
 		pageTexts[i] = text
-		wordLists[i] = words
 	}
 
-	return strings.Join(pageTexts, "\n"), internal.Concatenate(wordLists...)
+	return strings.Join(pageTexts, "\n")
 }
 
 func (p *Page) SearchValueByKey(key string) []*KeyValue {

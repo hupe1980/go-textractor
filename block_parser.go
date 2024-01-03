@@ -56,14 +56,7 @@ func (bp *blockParser) createDocument() *Document {
 		}
 
 		pageParser := newPageParser(bp, page)
-
-		page.lines = pageParser.createLines()
-		page.layouts = pageParser.createLayouts()
-		page.keyValues = pageParser.createKeyValues()
-		page.tables = pageParser.createTables()
-		page.words = pageParser.createWords()
-		page.queries = pageParser.createQueries()
-		page.signatures = pageParser.createSignatures()
+		pageParser.addPageElements()
 
 		pages[i] = page
 	}
