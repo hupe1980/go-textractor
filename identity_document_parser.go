@@ -17,7 +17,7 @@ func newIdentityDocumentParser(identityDocument types.IdentityDocument) *identit
 	}
 }
 
-func (idp *identityDocumentParser) CreateIdentityDocument() *IdentityDocument {
+func (idp *identityDocumentParser) createIdentityDocument() *IdentityDocument {
 	fields, fieldsMap := idp.createFields()
 
 	return &IdentityDocument{

@@ -34,7 +34,7 @@ func ParseAnalyzeIDOutput(output *AnalyzeIDOutput) ([]*IdentityDocument, error) 
 
 	for i, d := range output.IdentityDocuments {
 		parser := newIdentityDocumentParser(d)
-		parsedIdentityDocuments[i] = parser.CreateIdentityDocument()
+		parsedIdentityDocuments[i] = parser.createIdentityDocument()
 	}
 
 	if len(parsedIdentityDocuments) != int(aws.ToInt32(output.DocumentMetadata.Pages)) {
@@ -42,4 +42,24 @@ func ParseAnalyzeIDOutput(output *AnalyzeIDOutput) ([]*IdentityDocument, error) 
 	}
 
 	return parsedIdentityDocuments, nil
+}
+
+type AnalyzeExpenseOutput struct {
+	DocumentMetadata *types.DocumentMetadata `json:"DocumentMetadata"`
+	ExpenseDocuments []types.ExpenseDocument `json:"ExpenseDocuments"`
+}
+
+func ParseAnalyzeExpenseOutput(output *AnalyzeExpenseOutput) ([]*ExpenseDocument, error) {
+	parsedExpenseDocuments := make([]*ExpenseDocument, len(output.ExpenseDocuments))
+
+	for i, d := range output.ExpenseDocuments {
+		parser := newExpenseDocumentParser(d)
+		parsedExpenseDocuments[i] = parser.createExpenseDocument()
+	}
+
+	if len(parsedExpenseDocuments) != int(aws.ToInt32(output.DocumentMetadata.Pages)) {
+		return nil, fmt.Errorf("number of pages %d does not match metadata %d", len(parsedExpenseDocuments), aws.ToInt32(output.DocumentMetadata.Pages))
+	}
+
+	return parsedExpenseDocuments, nil
 }

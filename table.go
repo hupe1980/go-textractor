@@ -10,6 +10,9 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
+// Compile time check to ensure Table satisfies the LayoutChild interface.
+var _ LayoutChild = (*Table)(nil)
+
 type Table struct {
 	base
 	title       *TableTitle

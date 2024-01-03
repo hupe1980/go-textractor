@@ -7,6 +7,9 @@ import (
 	"github.com/hupe1980/go-textractor/internal"
 )
 
+// Compile time check to ensure KeyValue satisfies the LayoutChild interface.
+var _ LayoutChild = (*KeyValue)(nil)
+
 type KeyValue struct {
 	base
 	key   *Key
