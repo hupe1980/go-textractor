@@ -65,15 +65,19 @@ MATrIX (ours)	166	78.60	96.05
 		})
 
 		//fmt.Println(text)
+
 		assert.Equal(t, `# New Document
 ## Paragraph 1
 Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+
+
 | A  |  B  | C  |
 |----|-----|----|
 | A1 | b1  | C1 |
 | A2 | B2  | C2 |
 | A3 | BC3 |    |
 | A4 | B4  | C4 |
+
 `, text)
 	})
 

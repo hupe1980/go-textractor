@@ -39,12 +39,55 @@ func (l *Layout) Text(optFns ...func(*TextLinearizationOptions)) string {
 		return ""
 	}
 
+	var text string
+
+	switch l.BlockType() { // nolint exhaustive
+	case types.BlockTypeLayoutList:
+		items := make([]string, 0, len(l.children))
+
+		for _, c := range l.children {
+			itemText := c.Text(func(tlo *TextLinearizationOptions) {
+				*tlo = opts
+			})
+
+			if opts.RemoveNewLinesInListElements {
+				itemText = strings.ReplaceAll(itemText, "\n", " ")
+			}
+
+			items = append(items, fmt.Sprintf("%s%s%s", opts.ListElementPrefix, itemText, opts.ListElementSuffix))
+		}
+
+		text = strings.Join(items, opts.ListElementSeparator)
+	case types.BlockTypeLayoutPageNumber:
+		text = l.linearizeChildren(l.children, opts)
+		text = fmt.Sprintf("%s%s%s", opts.PageNumberPrefix, text, opts.PageNumberSuffix)
+	case types.BlockTypeLayoutTitle:
+		text = l.linearizeChildren(l.children, opts)
+		text = fmt.Sprintf("%s%s%s", opts.TitlePrefix, text, opts.TitleSuffix)
+	case types.BlockTypeLayoutSectionHeader:
+		text = l.linearizeChildren(l.children, opts)
+		text = fmt.Sprintf("%s%s%s", opts.SectionHeaderPrefix, text, opts.SectionHeaderSuffix)
+	default:
+		text = l.linearizeChildren(l.children, opts)
+	}
+
+	invalidSeparator := strings.Repeat("\n", opts.MaxNumberOfConsecutiveNewLines+1)
+	validSeperator := strings.Repeat("\n", opts.MaxNumberOfConsecutiveNewLines)
+
+	for strings.Contains(text, invalidSeparator) {
+		text = strings.ReplaceAll(text, invalidSeparator, validSeperator)
+	}
+
+	return text
+}
+
+func (l *Layout) linearizeChildren(children []LayoutChild, opts TextLinearizationOptions) string {
 	var (
 		text string
 		prev LayoutChild
 	)
 
-	for _, group := range groupElementsHorizontally(l.children, opts.HeuristicOverlapRatio) {
+	for _, group := range groupElementsHorizontally(children, opts.HeuristicOverlapRatio) {
 		sort.Slice(group, func(i, j int) bool {
 			return group[i].BoundingBox().Left() < group[j].BoundingBox().Left()
 		})
@@ -57,8 +100,11 @@ func (l *Layout) Text(optFns ...func(*TextLinearizationOptions)) string {
 			})
 
 			switch child.(type) {
-			case *Table, *KeyValue:
-				text += childText
+			case *Table:
+				text += fmt.Sprintf("%s%s%s", opts.TableLayoutPrefix, childText, opts.TableLayoutSuffix)
+				addRowSeparatorIfTableLayout = false
+			case *KeyValue:
+				text += fmt.Sprintf("%s%s%s", opts.KeyValueLayoutPrefix, childText, opts.KeyValueLayoutSuffix)
 				addRowSeparatorIfTableLayout = false
 			default:
 				if l.BlockType() == types.BlockTypeLayoutTable {
@@ -102,28 +148,6 @@ func (l *Layout) Text(optFns ...func(*TextLinearizationOptions)) string {
 		for strings.Contains(text, "  ") {
 			text = strings.ReplaceAll(text, "  ", " ")
 		}
-	}
-
-	switch l.BlockType() { // nolint exhaustive
-	case types.BlockTypeLayoutPageNumber:
-		if opts.AddPrefixesAndSuffixes {
-			text = fmt.Sprintf("%s%s%s", opts.PageNumberPrefix, text, opts.PageNumberSuffix)
-		}
-	case types.BlockTypeLayoutTitle:
-		if opts.AddPrefixesAndSuffixes {
-			text = fmt.Sprintf("%s%s%s", opts.TitlePrefix, text, opts.TitleSuffix)
-		}
-	case types.BlockTypeLayoutSectionHeader:
-		if opts.AddPrefixesAndSuffixes {
-			text = fmt.Sprintf("%s%s%s", opts.SectionHeaderPrefix, text, opts.SectionHeaderSuffix)
-		}
-	}
-
-	invalidSeparator := strings.Repeat("\n", opts.MaxNumberOfConsecutiveNewLines+1)
-	validSeperator := strings.Repeat("\n", opts.MaxNumberOfConsecutiveNewLines)
-
-	for strings.Contains(text, invalidSeparator) {
-		text = strings.ReplaceAll(text, invalidSeparator, validSeperator)
 	}
 
 	return text

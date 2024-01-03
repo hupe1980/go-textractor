@@ -93,11 +93,7 @@ func (t *Table) Text(optFns ...func(*TextLinearizationOptions)) string {
 		panic(fmt.Sprintf("unknown table format: %s", opts.TableLinearizationFormat))
 	}
 
-	if opts.AddPrefixesAndSuffixes {
-		tableText = fmt.Sprintf("%s%s%s", opts.TablePrefix, tableText, opts.TableSuffix)
-	}
-
-	return tableText
+	return fmt.Sprintf("%s%s%s", opts.TablePrefix, tableText, opts.TableSuffix)
 }
 
 func (t *Table) RowCount() int {

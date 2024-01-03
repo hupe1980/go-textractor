@@ -8,8 +8,8 @@ type TextLinearizationOptions struct {
 	// LinearizeKeyValues includes form key and values in the linearized output.
 	LinearizeKeyValues bool
 
-	// RemoveNewLinesInLeafElements removes new lines in leaf layout elements, removing extra whitespace.
-	RemoveNewLinesInLeafElements bool
+	// RemoveNewLinesInListElements removes new lines in list elements.
+	RemoveNewLinesInListElements bool
 
 	// MaxNumberOfConsecutiveNewLines sets the maximum number of consecutive new lines to keep, removing extra whitespace.
 	MaxNumberOfConsecutiveNewLines int
@@ -59,6 +59,12 @@ type TextLinearizationOptions struct {
 	// TitleSuffix is the suffix for title layout elements.
 	TitleSuffix string
 
+	// TableLayoutPrefix is the prefix for table elements.
+	TableLayoutPrefix string
+
+	// TableLayoutSuffix is the suffix for table elements.
+	TableLayoutSuffix string
+
 	// TableLinearizationFormat sets how to represent tables in the linearized output. Choices are plaintext or markdown.
 	TableLinearizationFormat string
 
@@ -101,6 +107,12 @@ type TextLinearizationOptions struct {
 	// TextSuffix is the suffix for text layout elements.
 	TextSuffix string
 
+	// KeyValueLayoutPrefix is the prefix for key_value layout elements (not for individual key-value elements).
+	KeyValueLayoutPrefix string
+
+	// KeyValueLayoutSuffix is the suffix for key_value layout elements (not for individual key-value elements).
+	KeyValueLayoutSuffix string
+
 	// KeyValuePrefix is the prefix for key-value elements.
 	KeyValuePrefix string
 
@@ -136,15 +148,12 @@ type TextLinearizationOptions struct {
 
 	// SignatureToken is the signature representation in the linearized text.
 	SignatureToken string
-
-	// AddPrefixesAndSuffixes controls if the prefixes/suffixes will be added to the linearized text.
-	AddPrefixesAndSuffixes bool
 }
 
 var DefaultLinerizationOptions = TextLinearizationOptions{
 	LinearizeTables:                true,
 	LinearizeKeyValues:             true,
-	RemoveNewLinesInLeafElements:   true,
+	RemoveNewLinesInListElements:   true,
 	MaxNumberOfConsecutiveNewLines: 2,
 	HideHeaderLayout:               false,
 	HideFooterLayout:               false,
@@ -161,6 +170,8 @@ var DefaultLinerizationOptions = TextLinearizationOptions{
 	ListElementSuffix:              "",
 	TitlePrefix:                    "",
 	TitleSuffix:                    "",
+	TableLayoutPrefix:              "\n\n",
+	TableLayoutSuffix:              "\n",
 	TableLinearizationFormat:       "plaintext",
 	TableMinTableWords:             0,
 	TableColumnSeparator:           "\t",
@@ -175,6 +186,8 @@ var DefaultLinerizationOptions = TextLinearizationOptions{
 	SectionHeaderSuffix:            "",
 	TextPrefix:                     "",
 	TextSuffix:                     "",
+	KeyValueLayoutPrefix:           "\n\n",
+	KeyValueLayoutSuffix:           "",
 	KeyValuePrefix:                 "",
 	KeyValueSuffix:                 "",
 	KeyPrefix:                      "",
@@ -187,5 +200,4 @@ var DefaultLinerizationOptions = TextLinearizationOptions{
 	HeuristicLineBreakThreshold:    0.9,
 	HeuristicOverlapRatio:          0.5,
 	SignatureToken:                 "[SIGNATURE]",
-	AddPrefixesAndSuffixes:         true,
 }
