@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/textract"
@@ -53,16 +54,16 @@ func main() {
 	// Iterate over elements in the document
 	for _, p := range doc.Pages() {
 		for _, s := range p.Signatures() {
-			fmt.Printf("ID: [%s]\n", s.ID())
-			fmt.Printf("BoundingBox: [%s]\n", s.BoundingBox())
+			fmt.Printf("ID: %s\n", s.ID())
+			fmt.Printf("BoundingBox: %s\n", s.BoundingBox())
 
-			// points := make([]string, len(s.Geometry().Polygon()))
-			// for i, point := range s.Geometry().Polygon() {
-			// 	points[i] = fmt.Sprintf("(%s)", point)
-			// }
+			points := make([]string, len(s.Polygon()))
+			for i, point := range s.Polygon() {
+				points[i] = point.String()
+			}
 
-			// fmt.Printf("Polygon: [%s]\n", strings.Join(points, ", "))
-			// fmt.Println()
+			fmt.Printf("Polygon: [%s]\n", strings.Join(points, ", "))
+			fmt.Println()
 		}
 
 		fmt.Println("Search Fields:")

@@ -12,6 +12,10 @@ type Line struct {
 	words []*Word
 }
 
+func (l *Line) Words() []*Word {
+	return l.words
+}
+
 func (l *Line) Text(_ ...func(*TextLinearizationOptions)) string {
 	texts := make([]string, len(l.words))
 	for i, w := range l.words {
@@ -21,6 +25,6 @@ func (l *Line) Text(_ ...func(*TextLinearizationOptions)) string {
 	return strings.Join(texts, " ")
 }
 
-func (l *Line) Words() []*Word {
-	return l.words
+func (l *Line) String() string {
+	return l.Text()
 }

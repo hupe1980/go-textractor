@@ -70,6 +70,14 @@ func (kv *KeyValue) Text(optFns ...func(*TextLinearizationOptions)) string {
 	return fmt.Sprintf("%s %s", keyText, valueText)
 }
 
+func (kv *KeyValue) String() string {
+	if kv.Value().SelectionElement() != nil {
+		return fmt.Sprintf("%s %s", kv.Value(), kv.Key())
+	}
+
+	return fmt.Sprintf("%s : %s", kv.Key(), kv.Value())
+}
+
 type Key struct {
 	base
 	words []*Word
@@ -101,6 +109,11 @@ type Value struct {
 
 func (v *Value) Words() []*Word {
 	return v.words
+}
+
+// SelectionElement returns the selection element associated with the table cell.
+func (v *Value) SelectionElement() *SelectionElement {
+	return v.selectionElement
 }
 
 func (v *Value) Text(optFns ...func(*TextLinearizationOptions)) string {

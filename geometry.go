@@ -82,7 +82,7 @@ func (bb *BoundingBox) Intersection(other *BoundingBox) *BoundingBox {
 
 // String returns a string representation of the bounding box.
 func (bb *BoundingBox) String() string {
-	return fmt.Sprintf("width: %f, height: %f, left: %f, top: %f", bb.Width(), bb.Height(), bb.Left(), bb.Top())
+	return fmt.Sprintf("[width: %f, height: %f, left: %f, top: %f]", bb.Width(), bb.Height(), bb.Left(), bb.Top())
 }
 
 type BoundingBoxAccessor interface {
@@ -138,7 +138,7 @@ func (p *Point) Y() float64 {
 
 // String returns a string representation of the Point, including its X and Y coordinates.
 func (p *Point) String() string {
-	return fmt.Sprintf("x: %f, y: %f", p.x, p.y)
+	return fmt.Sprintf("(x: %f, y: %f)", p.x, p.y)
 }
 
 // Orientation represents the orientation of a geometric element.

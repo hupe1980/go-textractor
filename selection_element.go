@@ -36,3 +36,7 @@ func (se *SelectionElement) Text(optFns ...func(*TextLinearizationOptions)) stri
 
 	return text
 }
+
+func (se *SelectionElement) String() string {
+	return se.Text()
+}

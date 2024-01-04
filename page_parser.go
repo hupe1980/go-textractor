@@ -72,16 +72,20 @@ func (pp *pageParser) createWords() []*Word {
 
 	for _, w := range pp.idWordMap {
 		if w.line == nil {
-			w.line = &Line{
+			line := &Line{
 				base: base{
 					id:          uuid.New().String(),
 					confidence:  w.Confidence(),
 					blockType:   types.BlockTypeLine,
 					boundingBox: w.BoundingBox(),
+					polygon:     w.Polygon(),
 					page:        pp.page,
 				},
 				words: []*Word{w},
 			}
+
+			w.line = line
+			pp.page.lines = append(pp.page.lines, line)
 		}
 
 		words = append(words, w)
@@ -302,6 +306,7 @@ func (pp *pageParser) createLayouts() []*Layout {
 					confidence:  line.Confidence(),
 					blockType:   types.BlockTypeLayoutText,
 					boundingBox: line.BoundingBox(),
+					polygon:     line.Polygon(),
 					page:        pp.page,
 				},
 				noNewLines: false,
