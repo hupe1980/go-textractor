@@ -30,7 +30,7 @@ func TestIdentityDocumentField(t *testing.T) {
 	identityField := &IdentityDocumentField{
 		fieldType:       IdentityDocumentFieldType(aws.ToString(rawField.Type.Text)),
 		value:           aws.ToString(rawField.ValueDetection.Text),
-		confidence:      aws.ToFloat32(rawField.ValueDetection.Confidence),
+		confidence:      float64(aws.ToFloat32(rawField.ValueDetection.Confidence)),
 		normalizedValue: normalizedValue,
 		raw:             rawField,
 	}
@@ -38,7 +38,7 @@ func TestIdentityDocumentField(t *testing.T) {
 	// Test methods of IdentityDocumentField
 	assert.Equal(t, IdentityDocumentFieldTypeDateOfBirth, identityField.FieldType())
 	assert.Equal(t, "1990-01-01T15:04:05", identityField.Value())
-	assert.Equal(t, float32(0.95), identityField.Confidence())
+	assert.InDelta(t, 0.95, identityField.Confidence(), 0.000001)
 	assert.True(t, identityField.IsNormalized())
 	assert.Equal(t, normalizedValue, identityField.NormalizedValue())
 }

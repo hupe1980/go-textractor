@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/textract"
@@ -56,13 +55,7 @@ func main() {
 		for _, s := range p.Signatures() {
 			fmt.Printf("ID: %s\n", s.ID())
 			fmt.Printf("BoundingBox: %s\n", s.BoundingBox())
-
-			points := make([]string, len(s.Polygon()))
-			for i, point := range s.Polygon() {
-				points[i] = point.String()
-			}
-
-			fmt.Printf("Polygon: [%s]\n", strings.Join(points, ", "))
+			fmt.Printf("Polygon: %s\n", s.Polygon())
 			fmt.Println()
 		}
 

@@ -2,6 +2,7 @@ package textractor
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -121,13 +122,23 @@ func TestParseAnalyzeIDOutput(t *testing.T) {
 	res, err := loadAnalyzeIDOutputTestdata("testdata/test-analyze-id-response.json")
 	assert.NoError(t, err)
 
-	idocuments, err := ParseAnalyzeIDOutput(res)
+	idocs, err := ParseAnalyzeIDOutput(res)
 	assert.NoError(t, err)
 
-	assert.Equal(t, 1, len(idocuments))
-	assert.Equal(t, 21, len(idocuments[0].Fields()))
-	assert.Equal(t, IdentityDocumentTypeDriverLicenseFront, idocuments[0].IdentityDocumentType())
-	assert.Equal(t, "GARCIA", idocuments[0].FieldByType(IdentityDocumentFieldTypeFirstName).Value())
+	assert.Equal(t, 1, len(idocs))
+	assert.Equal(t, 21, len(idocs[0].Fields()))
+	assert.Equal(t, IdentityDocumentTypeDriverLicenseFront, idocs[0].IdentityDocumentType())
+	assert.Equal(t, "GARCIA", idocs[0].FieldByType(IdentityDocumentFieldTypeFirstName).Value())
+}
+
+func TestParseAnalyzeExpenseOutput(t *testing.T) {
+	res, err := loadAnalyzeExpenseOutputTestdata("testdata/test-analyze-expense-response.json")
+	assert.NoError(t, err)
+
+	edocs, err := ParseAnalyzeExpenseOutput(res)
+	assert.NoError(t, err)
+
+	fmt.Println(edocs)
 }
 
 func loadDocumentAPIOutputTestdata(filename string) (*DocumentAPIOutput, error) {
@@ -165,6 +176,27 @@ func loadAnalyzeIDOutputTestdata(filename string) (*AnalyzeIDOutput, error) {
 	}
 
 	output := new(AnalyzeIDOutput)
+	if err := json.Unmarshal(data, output); err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func loadAnalyzeExpenseOutputTestdata(filename string) (*AnalyzeExpenseOutput, error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	defer f.Close()
+
+	data, err := io.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(AnalyzeExpenseOutput)
 	if err := json.Unmarshal(data, output); err != nil {
 		return nil, err
 	}

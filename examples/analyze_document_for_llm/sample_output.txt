@@ -1,8 +1,6 @@
 Request for Verification of Employment
 Privacy Act Notice: This information is to be used by the agency collecting it or its assignees in determining whether you qualify as a prospective mortgagor under its program. It will not be disclosed outside the agency except as required and permitted by law. You do not have to provide this information, but if you do not your application for approval as a prospec- tive mortgagor or borrower may be delayed or rejected. The information requested in this form is authorized by Title 38, USC, Chapter 37 (if VA); by 12 USC, Section 1701 et. seq. (if HUD/FHA); by 42 USC, Section 1452b (if HUD/CPD); and Title 42 USC, 1471 et. seq., or 7 USC, 1921 et. seq. (if USDA/FmHA).
 Instructions: Lender - Complete items 1 through 7. Have applicant complete item 8. Forward directly to employer named in item 1. Employer - Please complete either Part II or Part III as applicable. Complete Part IV and return directly to lender named in item 2. The form is to be transmitted directly to the lender and is not to be transmitted through the applicant or any other party.
-
-
 Part I - Request
 
 1. To (Name and address of employer) Alejandro Rosalez 123 Any Street, Any Town, USA
@@ -19,9 +17,7 @@ I certify that this verification has been sent directly to the employer and has 
 
 5. Date 12/12/2006
 
-6. Lender's Number (Optional) 5555-5555-5555
-
-I have applied for a mortgage loan and stated that I am now or was formerly employed by you. My signature below authorizes verification of this information.
+6. Lender's Number (Optional) 5555-5555-5555 I have applied for a mortgage loan and stated that I am now or was formerly employed by you. My signature below authorizes verification of this information.
 
 7. Name and Address of Applicant (include employee or badge number) Paulo Santos 123 Any Street, Any Town, USA
 
@@ -43,9 +39,9 @@ Part II - Verification of Present Employment
 
 14. If Overtime or Bonus is Applicable,
 
-Annual [X]
+[X] Annual
 
-Hourly [ ]
+[ ] Hourly
 
 Pay Grade
 
@@ -53,9 +49,9 @@ Pay Grade
 
 Is Its Continuance Likely?
 
-Monthly [ ]
+[ ] Monthly
 
-Other (Specify) [ ]
+[ ] Other (Specify)
 
 Type
 
@@ -63,33 +59,33 @@ Monthly Amount
 
 Overtime
 
-Yes [X]
+[X] Yes
 
-No [ ]
+[ ] No
 
-Weekly [ ]
+[ ] Weekly
 
 Bonus
 
-Yes [ ]
+[ ] Yes
 
-No [X]
-
-Base Pay $ 520
-
-15. If paid hourly - average hours per week 40 hours 
-
-12B. Gross Earnings
+[X] No
 
 Type
 
 Year To Date
 
+12B. Gross Earnings
+
 Past Year
 
 Past Year
+
+Base Pay $ 520
 
 Rations $ 162
+
+15. If paid hourly - average hours per week 40 hours 
 
 Base Pay
 
@@ -123,9 +119,9 @@ $
 
 30.00
 
-17. Projected amount of next pay increase $ 5600
-
 Quarters $ 986
+
+17. Projected amount of next pay increase $ 5600
 
 Commissions
 
@@ -143,42 +139,42 @@ Pro Pay $ 123
 
 18. Date of applicant's last pay increase 09/08/2006
 
-Overseas or Combat $ 645
+Total
 
 Bonus
 
 $
 
-20.00
-
-$
-
-20.00
-
-$
-
-15.00
-
-19. Amount of last pay increase $ 4800
-
-Total
-
 $ 70.00
+
+20.00
 
 $ 80.00
 
 $
 
+20.00
+
+$
+
+$
+
 90.00
 
+15.00
+
 Variable Housing Allowance $ 587
+
+Overseas or Combat $ 645
+
+19. Amount of last pay increase $ 4800
+
+
 20. Remarks (If employee was off work for any length of time, please indicate time period and reason) Not Applicable
 Part III - Verification of Previous Employment
 
 
-21. Date Hired 04/04/2004
-
-23. Salary/Wage at Termination Per (Year) (Month) (Week)
+21. Date Hired 04/04/200423. Salary/Wage at Termination Per (Year) (Month) (Week)
 
 22. Date Terminated 01/03/2005
 
@@ -194,11 +190,7 @@ Bonus 4000
 
 25. Position Held Device Operator
 
-Part IV - Authorized Signature - Federal statutes provide severe penalties for any fraud, intentional misrepresentation, or criminal connivance
-
-or conspiracy purposed to influence the issuance of any guaranty or insurance by the VA Secretary, the U.S.D.A., FmHA/FHA Commissioner, or
-
-the HUD/CPD Assistant Secretary.
+Part IV - Authorized Signature - Federal statutes provide severe penalties for any fraud, intentional misrepresentation, or criminal connivance or conspiracy purposed to influence the issuance of any guaranty or insurance by the VA Secretary, the U.S.D.A., FmHA/FHA Commissioner, or the HUD/CPD Assistant Secretary.
 
 26. Signature of Employer Richard Roe
 
@@ -211,4 +203,6 @@ the HUD/CPD Assistant Secretary.
 29. Print or type name signed in Item 26 Richard Roe
 
 30. Phone No. 555-0100
+
+
 Form 1005 July 96

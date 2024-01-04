@@ -3,6 +3,7 @@ package textractor
 import (
 	"fmt"
 	"math"
+	"strings"
 )
 
 type BoundingBox struct {
@@ -119,6 +120,17 @@ func NewEnclosingBoundingBox[T BoundingBoxAccessor](accessors ...T) *BoundingBox
 		top:    top,
 		width:  right - left,
 	}
+}
+
+type Polygon []*Point
+
+func (p Polygon) String() string {
+	points := make([]string, len(p))
+	for i, point := range p {
+		points[i] = point.String()
+	}
+
+	return fmt.Sprintf("[%s]", strings.Join(points, ", "))
 }
 
 // Point represents a 2D point.

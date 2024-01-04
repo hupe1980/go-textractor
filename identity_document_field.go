@@ -10,7 +10,7 @@ import (
 type IdentityDocumentField struct {
 	fieldType       IdentityDocumentFieldType
 	value           string
-	confidence      float32
+	confidence      float64
 	normalizedValue *NormalizedIdentityDocumentFieldValue
 	raw             types.IdentityDocumentField
 }
@@ -26,7 +26,7 @@ func (idf *IdentityDocumentField) Value() string {
 }
 
 // Confidence returns the confidence score associated with the field extraction.
-func (idf *IdentityDocumentField) Confidence() float32 {
+func (idf *IdentityDocumentField) Confidence() float64 {
 	return idf.confidence
 }
 

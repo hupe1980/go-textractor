@@ -107,13 +107,27 @@ func (t *Table) RowCount() int {
 	return max.rowIndex
 }
 
-func (t *Table) CellAt(rowIndex, columnIndex int) Cell {
-	for _, mc := range t.mergedCells {
-		if mc.columnIndex <= columnIndex &&
-			mc.columnIndex+mc.columnSpan > columnIndex &&
-			mc.rowIndex <= rowIndex &&
-			mc.rowIndex+mc.rowSpan > rowIndex {
-			return mc
+type CellAtOptions struct {
+	IgnoreMergedCells bool
+}
+
+func (t *Table) CellAt(rowIndex, columnIndex int, optFns ...func(*CellAtOptions)) Cell {
+	opts := CellAtOptions{
+		IgnoreMergedCells: true,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	if !opts.IgnoreMergedCells {
+		for _, mc := range t.mergedCells {
+			if mc.columnIndex <= columnIndex &&
+				mc.columnIndex+mc.columnSpan > columnIndex &&
+				mc.rowIndex <= rowIndex &&
+				mc.rowIndex+mc.rowSpan > rowIndex {
+				return mc
+			}
 		}
 	}
 
@@ -126,12 +140,23 @@ func (t *Table) CellAt(rowIndex, columnIndex int) Cell {
 	return nil
 }
 
-func (t *Table) RowCellsAt(rowIndex int) []Cell {
+type RowCellsAtOptions struct {
+	IgnoreMergedCells bool
+}
+
+func (t *Table) RowCellsAt(rowIndex int, optFns ...func(*RowCellsAtOptions)) []Cell {
+	opts := RowCellsAtOptions{
+		IgnoreMergedCells: true,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	cells := make([]Cell, 0)
 	mergedCellIDs := make([]string, 0)
-	ignoreMergedCells := true
 
-	if !ignoreMergedCells {
+	if opts.IgnoreMergedCells {
 		for _, mc := range t.mergedCells {
 			if mc.rowIndex <= rowIndex && mc.rowIndex+mc.rowSpan > rowIndex {
 				cells = append(cells, mc)
@@ -159,13 +184,27 @@ func (tr *TableRow) Cells() []Cell {
 	return tr.cells
 }
 
-func (t *Table) Rows() []*TableRow {
+type RowsOptions struct {
+	IgnoreMergedCells bool
+}
+
+func (t *Table) Rows(optFns ...func(*RowsOptions)) []*TableRow {
+	opts := RowsOptions{
+		IgnoreMergedCells: true,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	rowCount := t.RowCount()
 	rows := make([]*TableRow, 0, rowCount)
 
 	for i := 1; i <= rowCount; i++ {
 		rows = append(rows, &TableRow{
-			cells: t.RowCellsAt(i),
+			cells: t.RowCellsAt(i, func(rcao *RowCellsAtOptions) {
+				rcao.IgnoreMergedCells = opts.IgnoreMergedCells
+			}),
 		})
 	}
 

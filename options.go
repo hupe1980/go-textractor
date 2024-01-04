@@ -2,15 +2,6 @@ package textractor
 
 // TextLinearizationOptions defines how a document is linearized into a text string.
 type TextLinearizationOptions struct {
-	// LinearizeTables includes tables in the linearized output.
-	LinearizeTables bool
-
-	// LinearizeKeyValues includes form key and values in the linearized output.
-	LinearizeKeyValues bool
-
-	// RemoveNewLinesInListElements removes new lines in list elements.
-	RemoveNewLinesInListElements bool
-
 	// MaxNumberOfConsecutiveNewLines sets the maximum number of consecutive new lines to keep, removing extra whitespace.
 	MaxNumberOfConsecutiveNewLines int
 
@@ -52,6 +43,9 @@ type TextLinearizationOptions struct {
 
 	// ListElementSuffix is the suffix for elements in a list layout (children).
 	ListElementSuffix string
+
+	// RemoveNewLinesInListElements removes new lines in list elements.
+	RemoveNewLinesInListElements bool
 
 	// TitlePrefix is the prefix for title layout elements.
 	TitlePrefix string
@@ -101,12 +95,6 @@ type TextLinearizationOptions struct {
 	// SectionHeaderSuffix is the suffix for section header layout elements.
 	SectionHeaderSuffix string
 
-	// TextPrefix is the prefix for text layout elements.
-	TextPrefix string
-
-	// TextSuffix is the suffix for text layout elements.
-	TextSuffix string
-
 	// KeyValueLayoutPrefix is the prefix for key_value layout elements (not for individual key-value elements).
 	KeyValueLayoutPrefix string
 
@@ -140,9 +128,6 @@ type TextLinearizationOptions struct {
 	// HeuristicHTolerance sets how much the line below and above the current line should differ in width to be separated.
 	HeuristicHTolerance float64
 
-	// HeuristicLineBreakThreshold sets how much space is acceptable between two lines before splitting them. Expressed in multiple of min heights.
-	HeuristicLineBreakThreshold float64
-
 	// HeuristicOverlapRatio sets how much vertical overlap is tolerated between two subsequent lines before merging them into a single line.
 	HeuristicOverlapRatio float64
 
@@ -151,9 +136,6 @@ type TextLinearizationOptions struct {
 }
 
 var DefaultLinerizationOptions = TextLinearizationOptions{
-	LinearizeTables:                true,
-	LinearizeKeyValues:             true,
-	RemoveNewLinesInListElements:   true,
 	MaxNumberOfConsecutiveNewLines: 2,
 	HideHeaderLayout:               false,
 	HideFooterLayout:               false,
@@ -168,6 +150,7 @@ var DefaultLinerizationOptions = TextLinearizationOptions{
 	ListLayoutSuffix:               "",
 	ListElementPrefix:              "",
 	ListElementSuffix:              "",
+	RemoveNewLinesInListElements:   true,
 	TitlePrefix:                    "",
 	TitleSuffix:                    "",
 	TableLayoutPrefix:              "\n\n",
@@ -184,8 +167,6 @@ var DefaultLinerizationOptions = TextLinearizationOptions{
 	TableCellSuffix:                "",
 	SectionHeaderPrefix:            "",
 	SectionHeaderSuffix:            "",
-	TextPrefix:                     "",
-	TextSuffix:                     "",
 	KeyValueLayoutPrefix:           "\n\n",
 	KeyValueLayoutSuffix:           "",
 	KeyValuePrefix:                 "",
@@ -197,7 +178,6 @@ var DefaultLinerizationOptions = TextLinearizationOptions{
 	SelectionElementSelected:       "[X]",
 	SelectionElementNotSelected:    "[ ]",
 	HeuristicHTolerance:            0.3,
-	HeuristicLineBreakThreshold:    0.9,
 	HeuristicOverlapRatio:          0.5,
 	SignatureToken:                 "[SIGNATURE]",
 }

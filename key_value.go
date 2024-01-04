@@ -44,7 +44,7 @@ func (kv *KeyValue) BoundingBox() *BoundingBox {
 	return NewEnclosingBoundingBox[BoundingBoxAccessor](kv.Key(), kv.Value())
 }
 
-func (kv *KeyValue) Polygon() []*Point {
+func (kv *KeyValue) Polygon() Polygon {
 	// TODO
 	panic("not implemented")
 }
@@ -61,13 +61,21 @@ func (kv *KeyValue) Text(optFns ...func(*TextLinearizationOptions)) string {
 	}
 
 	keyText := kv.Key().Text()
+	keyText = fmt.Sprintf("%s%s%s", opts.KeyPrefix, keyText, opts.KeySuffix)
+
 	valueText := kv.Value().Text()
+	valueText = fmt.Sprintf("%s%s%s", opts.ValuePrefix, valueText, opts.ValueSuffix)
 
 	if len(keyText) == 0 && len(valueText) == 0 {
 		return ""
 	}
 
-	return fmt.Sprintf("%s %s", keyText, valueText)
+	text := fmt.Sprintf("%s%s%s", keyText, opts.SameParagraphSeparator, valueText)
+	if kv.Value().SelectionElement() != nil {
+		text = fmt.Sprintf("%s%s%s", valueText, opts.SameParagraphSeparator, keyText)
+	}
+
+	return fmt.Sprintf("%s%s%s", opts.KeyValuePrefix, text, opts.KeyValueSuffix)
 }
 
 func (kv *KeyValue) String() string {

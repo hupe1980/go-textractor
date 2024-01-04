@@ -11,14 +11,14 @@ type base struct {
 	confidence  float64         // Confidence for the block
 	blockType   types.BlockType // Type of the block
 	boundingBox *BoundingBox    // Bounding box information
-	polygon     []*Point        // Polygon information
+	polygon     Polygon         // Polygon information
 	page        *Page           // Page information
 	raw         types.Block     // Raw block data
 }
 
 // newBase creates a new base instance from the provided Textract block and page information.
 func newBase(b types.Block, p *Page) base {
-	polygon := make([]*Point, len(b.Geometry.Polygon))
+	polygon := make(Polygon, len(b.Geometry.Polygon))
 	for i, p := range b.Geometry.Polygon {
 		polygon[i] = &Point{
 			x: float64(p.X),
@@ -63,7 +63,7 @@ func (b *base) BoundingBox() *BoundingBox {
 }
 
 // Polygon returns the polygon information of the block.
-func (b *base) Polygon() []*Point {
+func (b *base) Polygon() Polygon {
 	return b.polygon
 }
 

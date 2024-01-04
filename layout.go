@@ -226,7 +226,7 @@ func groupElementsHorizontally(elements []LayoutChild, overlapRatio float64) [][
 func partOfSameParagraph(child1, child2 LayoutChild, options TextLinearizationOptions) bool {
 	if child1 != nil && child2 != nil {
 		return math.Abs(child1.BoundingBox().Left()-child2.BoundingBox().Left()) <= options.HeuristicHTolerance*child1.BoundingBox().Width() &&
-			math.Abs(child1.BoundingBox().Top()-child2.BoundingBox().Top()) <= options.HeuristicOverlapRatio*math.Min(child1.BoundingBox().Height(), child2.BoundingBox().Height())
+			math.Abs(child1.BoundingBox().Top()+child1.BoundingBox().Height()-child2.BoundingBox().Top()) <= options.HeuristicOverlapRatio*math.Min(child1.BoundingBox().Height(), child2.BoundingBox().Height())
 	}
 
 	return false

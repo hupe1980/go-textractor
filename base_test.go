@@ -31,7 +31,7 @@ func TestBase(t *testing.T) {
 	})
 
 	t.Run("PolygonMethod", func(t *testing.T) {
-		polygon := []*Point{{1, 2}, {3, 4}}
+		polygon := Polygon{{1, 2}, {3, 4}}
 		b := base{polygon: polygon}
 		assert.Equal(t, polygon, b.Polygon(), "Polygon method does not return expected value")
 	})

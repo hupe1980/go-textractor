@@ -47,7 +47,7 @@ func (idp *identityDocumentParser) createFields() ([]*IdentityDocumentField, map
 		field := &IdentityDocumentField{
 			fieldType:  fieldType,
 			value:      aws.ToString(f.ValueDetection.Text),
-			confidence: aws.ToFloat32(f.ValueDetection.Confidence),
+			confidence: float64(aws.ToFloat32(f.ValueDetection.Confidence)),
 			raw:        f,
 		}
 
