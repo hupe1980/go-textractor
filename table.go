@@ -2,7 +2,9 @@ package textractor
 
 import (
 	"cmp"
+	"encoding/csv"
 	"fmt"
+	"io"
 	"slices"
 	"strings"
 
@@ -209,4 +211,43 @@ func (t *Table) Rows(optFns ...func(*RowsOptions)) []*TableRow {
 	}
 
 	return rows
+}
+
+func (t *Table) ToCSV(w io.Writer) error {
+	cw := csv.NewWriter(w)
+
+	defer cw.Flush()
+
+	var (
+		header []string
+		data   [][]string
+	)
+
+	for i, r := range t.Rows(func(ro *RowsOptions) {
+		ro.IgnoreMergedCells = true
+	}) {
+		if i == 0 {
+			header = make([]string, 0, len(r.Cells()))
+			for _, c := range r.Cells() {
+				header = append(header, c.Text())
+			}
+		} else {
+			rowData := make([]string, 0, len(r.Cells()))
+			for _, c := range r.Cells() {
+				rowData = append(rowData, c.Text())
+			}
+
+			data = append(data, rowData)
+		}
+	}
+
+	if err := cw.Write(header); err != nil {
+		return err
+	}
+
+	if err := cw.WriteAll(data); err != nil {
+		return err
+	}
+
+	return nil
 }

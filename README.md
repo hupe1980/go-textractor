@@ -94,6 +94,18 @@ func main() {
 
 For more example usage, see [examples](./examples).
 
+## Table extraction
+```golang
+f, err := os.Create("table.csv")
+if err != nil {
+	log.Fatal(err)
+}
+
+if err := doc.Tables[0].ToCSV(f); err != nil {
+	log.Fatal(err)
+}
+```
+
 ## Contributing
 Contributions are welcome! Feel free to open an issue or submit a pull request for any improvements or new features you would like to see.
 
