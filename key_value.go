@@ -2,6 +2,8 @@ package textractor
 
 import (
 	"fmt"
+	"math"
+	"slices"
 	"strings"
 
 	"github.com/hupe1980/go-textractor/internal"
@@ -10,6 +12,7 @@ import (
 // Compile time check to ensure KeyValue satisfies the LayoutChild interface.
 var _ LayoutChild = (*KeyValue)(nil)
 
+// KeyValue represents a key-value pair in a document.
 type KeyValue struct {
 	base
 	key   *Key
@@ -17,10 +20,12 @@ type KeyValue struct {
 	page  *Page
 }
 
+// Key returns the key of the key-value pair.
 func (kv *KeyValue) Key() *Key {
 	return kv.key
 }
 
+// Value returns the value of the key-value pair.
 func (kv *KeyValue) Value() *Value {
 	return kv.value
 }
@@ -40,19 +45,42 @@ func (kv *KeyValue) Confidence() float64 {
 	return internal.Mean(scores)
 }
 
+// OCRConfidence returns the OCR confidence for the key-value pair.
+func (kv *KeyValue) OCRConfidence() *OCRConfidence {
+	keyOCR := &OCRConfidence{}
+	if kv.Key() != nil {
+		keyOCR = kv.Key().OCRConfidence()
+	}
+
+	valueOCR := &OCRConfidence{}
+	if kv.Value() != nil {
+		valueOCR = kv.Value().OCRConfidence()
+	}
+
+	return &OCRConfidence{
+		mean: internal.Mean([]float64{keyOCR.Mean(), valueOCR.Mean()}),
+		min:  math.Min(keyOCR.Min(), valueOCR.Min()),
+		max:  math.Max(keyOCR.Max(), valueOCR.Max()),
+	}
+}
+
+// BoundingBox returns the bounding box that encloses the key-value pair.
 func (kv *KeyValue) BoundingBox() *BoundingBox {
 	return NewEnclosingBoundingBox[BoundingBoxAccessor](kv.Key(), kv.Value())
 }
 
+// Polygon returns the polygon representing the key-value pair.
 func (kv *KeyValue) Polygon() Polygon {
 	// TODO
 	panic("not implemented")
 }
 
+// Words returns the words in the key-value pair.
 func (kv *KeyValue) Words() []*Word {
 	return internal.Concatenate(kv.Key().Words(), kv.Value().Words())
 }
 
+// Text returns the text content of the key-value pair.
 func (kv *KeyValue) Text(optFns ...func(*TextLinearizationOptions)) string {
 	opts := DefaultLinerizationOptions
 
@@ -78,6 +106,7 @@ func (kv *KeyValue) Text(optFns ...func(*TextLinearizationOptions)) string {
 	return fmt.Sprintf("%s%s%s", opts.KeyValuePrefix, text, opts.KeyValueSuffix)
 }
 
+// String returns the string representation of the key-value pair.
 func (kv *KeyValue) String() string {
 	if kv.Value().SelectionElement() != nil {
 		return fmt.Sprintf("%s %s", kv.Value(), kv.Key())
@@ -86,15 +115,18 @@ func (kv *KeyValue) String() string {
 	return fmt.Sprintf("%s : %s", kv.Key(), kv.Value())
 }
 
+// Key represents the key part of a key-value pair.
 type Key struct {
 	base
 	words []*Word
 }
 
+// Words returns the words in the key.
 func (k *Key) Words() []*Word {
 	return k.words
 }
 
+// Text returns the text content of the key.
 func (k *Key) Text() string {
 	texts := make([]string, len(k.words))
 	for i, w := range k.words {
@@ -104,17 +136,33 @@ func (k *Key) Text() string {
 	return strings.Join(texts, " ")
 }
 
+// OCRConfidence returns the OCR confidence for the key.
+func (k *Key) OCRConfidence() *OCRConfidence {
+	scores := make([]float64, len(k.words))
+	for i, w := range k.words {
+		scores[i] = w.Confidence()
+	}
+
+	return &OCRConfidence{
+		mean: internal.Mean(scores),
+		max:  slices.Max(scores),
+		min:  slices.Min(scores),
+	}
+}
+
 // String returns the string representation of the key.
 func (k *Key) String() string {
 	return k.Text()
 }
 
+// Value represents the value part of a key-value pair.
 type Value struct {
 	base
 	words            []*Word
 	selectionElement *SelectionElement
 }
 
+// Words returns the words in the value.
 func (v *Value) Words() []*Word {
 	return v.words
 }
@@ -124,6 +172,7 @@ func (v *Value) SelectionElement() *SelectionElement {
 	return v.selectionElement
 }
 
+// Text returns the text content of the value.
 func (v *Value) Text(optFns ...func(*TextLinearizationOptions)) string {
 	if v.selectionElement != nil {
 		return v.selectionElement.Text(optFns...)
@@ -145,6 +194,28 @@ func (v *Value) Text(optFns ...func(*TextLinearizationOptions)) string {
 	}
 
 	return text
+}
+
+// OCRConfidence returns the OCR confidence for the value.
+func (v *Value) OCRConfidence() *OCRConfidence {
+	if v.selectionElement != nil {
+		return &OCRConfidence{
+			mean: v.SelectionElement().Confidence(),
+			min:  v.SelectionElement().Confidence(),
+			max:  v.SelectionElement().Confidence(),
+		}
+	}
+
+	scores := make([]float64, len(v.words))
+	for i, w := range v.words {
+		scores[i] = w.Confidence()
+	}
+
+	return &OCRConfidence{
+		mean: internal.Mean(scores),
+		max:  slices.Max(scores),
+		min:  slices.Min(scores),
+	}
 }
 
 // String returns the string representation of the value.

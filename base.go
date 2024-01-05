@@ -76,3 +76,19 @@ func (b *base) PageNumber() int {
 func (b *base) Raw() types.Block {
 	return b.raw
 }
+
+type OCRConfidence struct {
+	mean, max, min float64
+}
+
+func (ocr *OCRConfidence) Mean() float64 {
+	return ocr.mean
+}
+
+func (ocr *OCRConfidence) Max() float64 {
+	return ocr.max
+}
+
+func (ocr *OCRConfidence) Min() float64 {
+	return ocr.min
+}
