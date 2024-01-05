@@ -101,6 +101,8 @@ if err != nil {
 	log.Fatal(err)
 }
 
+defer f.Close()
+
 if err := doc.Tables[0].ToCSV(f); err != nil {
 	log.Fatal(err)
 }
@@ -108,6 +110,11 @@ if err := doc.Tables[0].ToCSV(f); err != nil {
 
 ## Contributing
 Contributions are welcome! Feel free to open an issue or submit a pull request for any improvements or new features you would like to see.
+
+## References
+- https://docs.aws.amazon.com/textract/latest/dg/
+- https://github.com/aws-samples/amazon-textract-textractor/
+- https://github.com/aws-samples/amazon-textract-response-parser/
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
