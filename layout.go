@@ -61,12 +61,15 @@ func (l *Layout) Text(optFns ...func(*TextLinearizationOptions)) string {
 	case types.BlockTypeLayoutPageNumber:
 		text = l.linearizeChildren(l.children, opts)
 		text = fmt.Sprintf("%s%s%s", opts.PageNumberPrefix, text, opts.PageNumberSuffix)
+		text = opts.OnLinerizedPageNumber(text)
 	case types.BlockTypeLayoutTitle:
 		text = l.linearizeChildren(l.children, opts)
 		text = fmt.Sprintf("%s%s%s", opts.TitlePrefix, text, opts.TitleSuffix)
+		text = opts.OnLinerizedTitle(text)
 	case types.BlockTypeLayoutSectionHeader:
 		text = l.linearizeChildren(l.children, opts)
 		text = fmt.Sprintf("%s%s%s", opts.SectionHeaderPrefix, text, opts.SectionHeaderSuffix)
+		text = opts.OnLinerizedSectionHeader(text)
 	default:
 		text = l.linearizeChildren(l.children, opts)
 	}

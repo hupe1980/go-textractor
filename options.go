@@ -1,5 +1,14 @@
 package textractor
 
+// OnLinerizedPageNumber is a callback function to customize the processing of page numbers during linearization.
+type OnLinerizedPageNumber func(pn string) string
+
+// OnLinerizedTitle is a callback function to customize the processing of titles during linearization.
+type OnLinerizedTitle func(t string) string
+
+// OnLinerizedSectionHeader is a callback function to customize the processing of section headers during linearization.
+type OnLinerizedSectionHeader func(sh string) string
+
 // TextLinearizationOptions defines how a document is linearized into a text string.
 type TextLinearizationOptions struct {
 	// MaxNumberOfConsecutiveNewLines sets the maximum number of consecutive new lines to keep, removing extra whitespace.
@@ -22,6 +31,9 @@ type TextLinearizationOptions struct {
 
 	// PageNumberSuffix is the suffix for page number layout elements.
 	PageNumberSuffix string
+
+	// OnLinerizedPageNumber is a callback function for customizing page number processing.
+	OnLinerizedPageNumber OnLinerizedPageNumber
 
 	// SameParagraphSeparator is the separator to use when combining elements within a text block.
 	SameParagraphSeparator string
@@ -52,6 +64,9 @@ type TextLinearizationOptions struct {
 
 	// TitleSuffix is the suffix for title layout elements.
 	TitleSuffix string
+
+	// OnLinerizedTitle is a callback function for customizing title processing.
+	OnLinerizedTitle OnLinerizedTitle
 
 	// TableLayoutPrefix is the prefix for table elements.
 	TableLayoutPrefix string
@@ -94,6 +109,9 @@ type TextLinearizationOptions struct {
 
 	// SectionHeaderSuffix is the suffix for section header layout elements.
 	SectionHeaderSuffix string
+
+	// OnLinerizedSectionHeader is a callback function for customizing section header processing.
+	OnLinerizedSectionHeader OnLinerizedSectionHeader
 
 	// KeyValueLayoutPrefix is the prefix for key_value layout elements (not for individual key-value elements).
 	KeyValueLayoutPrefix string
@@ -143,6 +161,7 @@ var DefaultLinerizationOptions = TextLinearizationOptions{
 	HidePageNumberLayout:           false,
 	PageNumberPrefix:               "",
 	PageNumberSuffix:               "",
+	OnLinerizedPageNumber:          func(pn string) string { return pn },
 	SameParagraphSeparator:         " ",
 	LayoutElementSeparator:         "\n\n",
 	ListElementSeparator:           "\n",
@@ -153,6 +172,7 @@ var DefaultLinerizationOptions = TextLinearizationOptions{
 	RemoveNewLinesInListElements:   true,
 	TitlePrefix:                    "",
 	TitleSuffix:                    "",
+	OnLinerizedTitle:               func(t string) string { return t },
 	TableLayoutPrefix:              "\n\n",
 	TableLayoutSuffix:              "\n",
 	TableLinearizationFormat:       "plaintext",
@@ -167,6 +187,7 @@ var DefaultLinerizationOptions = TextLinearizationOptions{
 	TableCellSuffix:                "",
 	SectionHeaderPrefix:            "",
 	SectionHeaderSuffix:            "",
+	OnLinerizedSectionHeader:       func(sh string) string { return sh },
 	KeyValueLayoutPrefix:           "\n\n",
 	KeyValueLayoutSuffix:           "",
 	KeyValuePrefix:                 "",
