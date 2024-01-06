@@ -14,6 +14,7 @@ type Cell interface {
 	Words() []*Word
 	Text(optFns ...func(*TextLinearizationOptions)) string
 	Confidence() float64
+	OCRConfidence() *OCRConfidence
 	IsColumnHeader() bool
 	IsTableTitle() bool
 	IsTableFooter() bool
@@ -51,6 +52,26 @@ func (tmc *TableMergedCell) Text(_ ...func(*TextLinearizationOptions)) string {
 	return strings.Join(texts, " ")
 }
 
+// OCRConfidence returns the OCR confidence for the merged cell.
+func (tmc *TableMergedCell) OCRConfidence() *OCRConfidence {
+	meanValues := make([]float64, 0, len(tmc.cells))
+	maxValues := make([]float64, 0, len(tmc.cells))
+	minValues := make([]float64, 0, len(tmc.cells))
+
+	for _, cell := range tmc.cells {
+		c := cell.OCRConfidence()
+		meanValues = append(meanValues, c.Mean())
+		maxValues = append(maxValues, c.Max())
+		minValues = append(minValues, c.Min())
+	}
+
+	return &OCRConfidence{
+		mean: internal.Mean(meanValues),
+		max:  slices.Max(maxValues),
+		min:  slices.Min(minValues),
+	}
+}
+
 // TableCell represents a cell in a table.
 type TableCell struct {
 	cell
@@ -80,6 +101,28 @@ func (tc *TableCell) Text(optFns ...func(*TextLinearizationOptions)) string {
 	}
 
 	return strings.Join(texts, " ")
+}
+
+// OCRConfidence returns the OCR confidence for the table cell.
+func (tc *TableCell) OCRConfidence() *OCRConfidence {
+	if tc.selectionElement != nil {
+		return &OCRConfidence{
+			mean: tc.SelectionElement().Confidence(),
+			min:  tc.SelectionElement().Confidence(),
+			max:  tc.SelectionElement().Confidence(),
+		}
+	}
+
+	scores := make([]float64, len(tc.words))
+	for i, w := range tc.words {
+		scores[i] = w.Confidence()
+	}
+
+	return &OCRConfidence{
+		mean: internal.Mean(scores),
+		max:  slices.Max(scores),
+		min:  slices.Min(scores),
+	}
 }
 
 // cell represents the base information shared among different types of table cells.

@@ -186,6 +186,26 @@ func (tr *TableRow) Cells() []Cell {
 	return tr.cells
 }
 
+// OCRConfidence returns the OCR confidence for the table row.
+func (tr *TableRow) OCRConfidence() *OCRConfidence {
+	meanValues := make([]float64, 0, len(tr.cells))
+	maxValues := make([]float64, 0, len(tr.cells))
+	minValues := make([]float64, 0, len(tr.cells))
+
+	for _, cell := range tr.cells {
+		c := cell.OCRConfidence()
+		meanValues = append(meanValues, c.Mean())
+		maxValues = append(maxValues, c.Max())
+		minValues = append(minValues, c.Min())
+	}
+
+	return &OCRConfidence{
+		mean: internal.Mean(meanValues),
+		max:  slices.Max(maxValues),
+		min:  slices.Min(minValues),
+	}
+}
+
 type RowsOptions struct {
 	IgnoreMergedCells bool
 }

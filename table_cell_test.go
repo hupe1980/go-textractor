@@ -77,4 +77,19 @@ func TestTableCell(t *testing.T) {
 		result := cell.Text()
 		assert.Equal(t, "Hello World", result, "Text mismatch")
 	})
+
+	t.Run("OCRConfindence", func(t *testing.T) {
+		// Create sample words
+		word1 := &Word{base: base{confidence: 0.9}}
+		word2 := &Word{base: base{confidence: 0.1}}
+
+		// Create a TableCell with sample words
+		cell := &TableCell{words: []*Word{word1, word2}}
+
+		// Call the OCRConfidence method and check if it returns the expected scores
+		result := cell.OCRConfidence()
+		assert.Equal(t, 0.5, result.Mean())
+		assert.Equal(t, 0.1, result.Min())
+		assert.Equal(t, 0.9, result.Max())
+	})
 }
