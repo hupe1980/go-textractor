@@ -77,18 +77,22 @@ func (b *base) Raw() types.Block {
 	return b.raw
 }
 
+// OCRConfidence represents the confidence scores (mean, max, min) from OCR processing.
 type OCRConfidence struct {
 	mean, max, min float64
 }
 
+// Mean returns the mean (average) confidence score.
 func (ocr *OCRConfidence) Mean() float64 {
 	return ocr.mean
 }
 
+// Max returns the maximum confidence score.
 func (ocr *OCRConfidence) Max() float64 {
 	return ocr.max
 }
 
+// Min returns the minimum confidence score.
 func (ocr *OCRConfidence) Min() float64 {
 	return ocr.min
 }
